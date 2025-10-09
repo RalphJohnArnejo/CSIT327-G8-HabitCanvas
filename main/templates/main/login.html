@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 1em;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        p.error {
+            color: red;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        .checkbox-label input {
+            width: auto;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<h2>Login</h2>
+<form method="post" novalidate>
+    {% csrf_token %}
+    
+    <!-- Email field restricted to allowed domains -->
+    <input type="email" name="email" placeholder="Email" required 
+           pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com|cit\.edu)$"
+           title="Email must be @gmail.com, @yahoo.com, @outlook.com, or @cit.edu" />
+
+    <!-- Password field must contain at least 1 uppercase and 1 special character -->
+    <input type="password" name="password" placeholder="Password" required
+           pattern="^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\-]).+$"
+           title="Password must contain at least 1 uppercase letter and 1 special character" />
+
+    <!-- Remember Me checkbox -->
+    <label class="checkbox-label">
+        <input type="checkbox" name="remember_me">
+        Remember Me
+    </label>
+
+    <button type="submit">Login</button>
+</form>
+    
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+<p>Don't have an account? <a href="/register/">Register</a></p>
+
+</body>
+</html>
