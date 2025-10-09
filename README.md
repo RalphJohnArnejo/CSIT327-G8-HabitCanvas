@@ -36,9 +36,9 @@ python manage.py runserver
 
 ## Team Members
 
-Ralph John R. Arnejo/Lead developer/ralphjohn.arnejo@cit.edu
-Ryle Fritz T. Acero/Developer/rylefritz.acero@cit.edu
-Karl Andrei B. Abriz/Developer/karlandrei.abriz@cit.edu
+Ralph John R. Arnejo/Lead developer
+Ryle Fritz T. Acero/Developer
+Karl Andrei B. Abriz/Developer
 ## Deployed Link
 
 
