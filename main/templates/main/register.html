@@ -1,66 +1,54 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 400px;
-            margin: 50px auto;
-        }
-        input, button {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            padding: 10px;
-            font-size: 1em;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        p.error {
-            color: red;
-        }
-        p.tip {
-            font-size: 0.9em;
-            color: #555;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | HabitCanvas</title>
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
 </head>
 <body>
-<h2>Register</h2>
-<form method="post" novalidate>
-    {% csrf_token %}
-    
-    <!-- Email field restricted to allowed domains -->
-    <input type="email" name="email" placeholder="Email" required 
-           pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com|cit\.edu)$"
-           title="Email must be @gmail.com, @yahoo.com, @outlook.com, or @cit.edu" />
+    <div class="register-container">
+        <div class="register-card">
+            <!-- 🔹 Logo Image -->
+            <div class="logo-container">
+                <img src="{% static 'habitcanvas.jpg' %}" alt="HabitCanvas Logo">
+            </div>
 
-    <!-- Password field must contain at least 1 uppercase and 1 special character -->
-    <input type="password" name="password" placeholder="Password" required
-           pattern="^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\-]).+$"
-           title="Password must contain at least 1 uppercase letter and 1 special character" />
+            <h2>Join HabitCanvas</h2>
+            <p class="subtitle">Start building better habits today</p>
 
-    <p class="tip">Tip: Your password must contain at least 1 uppercase letter and 1 special character.</p>
+            <form method="POST" novalidate>
+                {% csrf_token %}
 
-    <button type="submit">Register</button>
-</form>
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Email" required
+                           pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com|cit\.edu)$"
+                           title="Email must be @gmail.com, @yahoo.com, @outlook.com, or @cit.edu">
+                </div>
 
-{% if error %}
-<p class="error">{{ error }}</p>
-{% endif %}
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Password" required
+                           pattern="^(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\-]).+$"
+                           title="Password must contain at least 1 uppercase letter and 1 special character.">
+                    <p class="tip">Tip: Your password must contain at least 1 uppercase letter and 1 special character.</p>
+                </div>
 
-<p>Already have an account? <a href="/login/">Login</a></p>
+                <button type="submit" class="create-btn">Create Account</button>
 
+                {% if error %}
+                    <p class="error">{{ error }}</p>
+                {% endif %}
+            </form>
+
+            <p class="login-link">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+        </div>
+    </div>
 </body>
 </html>
+
 
 <!-- to show all account in database -->
  
