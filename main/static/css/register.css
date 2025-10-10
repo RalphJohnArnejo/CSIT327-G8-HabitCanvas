@@ -1,0 +1,149 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Container */
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Card */
+.register-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 380px;
+    padding: 2.5rem;
+    text-align: center;
+}
+
+/* ✅ Logo Image (replaces gray circle) */
+.logo-container {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #ddd;
+}
+
+.logo-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Headings */
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #212121;
+    margin-bottom: 0.25rem;
+}
+
+.subtitle {
+    color: #737373;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Inputs */
+.input-group {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.875rem;
+    color: #4169E1;
+    margin-bottom: 0.3rem;
+    font-weight: 500;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: 0.2s;
+}
+
+.input-group input:focus {
+    border-color: #4169E1;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.15);
+}
+
+/* Tip text */
+.tip {
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 0.25rem;
+}
+
+/* Error message */
+.error {
+    color: red;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+}
+
+/* Button */
+.create-btn {
+    width: 100%;
+    background-color: #4169E1;
+    color: white;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.create-btn:hover {
+    background-color: #3557c7;
+}
+
+/* Login link */
+.login-link {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: #212121;
+}
+
+.login-link a {
+    color: #4169E1;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .register-card {
+        padding: 2rem 1.5rem;
+    }
+}

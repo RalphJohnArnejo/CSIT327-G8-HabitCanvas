@@ -32,7 +32,7 @@ python manage.py migrate
 python manage.py createsuperuser
 
 7. Run the Development Server
-python manage.py runserver
+python manage.py runserver  
 
 ## Team Members
 
