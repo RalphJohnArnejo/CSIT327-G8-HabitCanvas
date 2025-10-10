@@ -5,7 +5,7 @@ To provide a customizable, ADHD-friendly productivity toolkit that helps individ
 ---
 
 ## Tech Stack
-- **Frontend:** HTML
+- **Frontend:** HTML, CSS
 - **Backend:** Python
 - **Database:** SQLite
 - **Version Control:** Git & GitHub
