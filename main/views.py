@@ -49,7 +49,7 @@ def login_view(request):
         if user:
             login(request, user)
 
-            # 📝 Save login attempt (success)
+            # Save login attempt (success)
             LoginAttempt.objects.create(
                 user=user,
                 email=email,

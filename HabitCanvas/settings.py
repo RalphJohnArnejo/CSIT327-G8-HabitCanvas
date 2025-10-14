@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main',
+    'main',  # your app
 ]
 
 MIDDLEWARE = [
@@ -48,7 +48,6 @@ ROOT_URLCONF = 'HabitCanvas.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-       
         'DIRS': [
             BASE_DIR / "main" / "templates",    # your main templates
             BASE_DIR / "main" / "templates" / "registration",  # your auth overrides
@@ -82,12 +81,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 8},  # Optional minimum length
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+    {
+        'NAME': 'main.validators.CustomPasswordValidator',
     },
 ]
 
@@ -117,4 +120,3 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # store in .env
 # EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # app password in .env
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
