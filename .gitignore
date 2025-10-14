@@ -15,3 +15,6 @@ db.sqlite3
 *.pot
 *.pyc
 *.mo
+
+# Environment variables
+.env
