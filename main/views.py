@@ -2,10 +2,23 @@ import re
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from .models import LoginAttempt  
+from .models import LoginAttempt
 from django.utils import timezone
 
 
+# -------------------------------
+# LANDING PAGE
+# -------------------------------
+def landing_view(request): 
+    """Landing page shown before login.""" 
+    if request.user.is_authenticated: 
+        return redirect("dashboard") 
+    return render(request, "main/landing.html")
+
+
+# -------------------------------
+# REGISTER
+# -------------------------------
 def register_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -34,6 +47,9 @@ def register_view(request):
     return render(request, "main/register.html")
 
 
+# -------------------------------
+# LOGIN
+# -------------------------------
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -43,13 +59,13 @@ def login_view(request):
         user = authenticate(request, username=email, password=password)
 
         ip_address = request.META.get('REMOTE_ADDR')
-        user_agent = request.META.get('HTTP_USER_AGENT', '')[:255]  # limit length
+        user_agent = request.META.get('HTTP_USER_AGENT', '')[:255]
 
-        # If login successful
+        # Login successful
         if user:
             login(request, user)
 
-            # Save login attempt (success)
+            # Save successful login attempt
             LoginAttempt.objects.create(
                 user=user,
                 email=email,
@@ -59,15 +75,15 @@ def login_view(request):
                 timestamp=timezone.now()
             )
 
-            # Session expiry
+            # Remember Me logic
             if remember_me:
-                request.session.set_expiry(2592000)  
+                request.session.set_expiry(2592000)  # 30 days
             else:
-                request.session.set_expiry(0) 
+                request.session.set_expiry(0)  # Until browser close
 
             return redirect("dashboard")
 
-        # If login failed
+        # Login failed
         LoginAttempt.objects.create(
             email=email,
             ip_address=ip_address,
@@ -81,12 +97,18 @@ def login_view(request):
     return render(request, "main/login.html")
 
 
+# -------------------------------
+# DASHBOARD
+# -------------------------------
 def dashboard_view(request):
     if not request.user.is_authenticated:
         return redirect("login")
     return render(request, "main/dashboard.html", {"user": request.user})
 
 
+# -------------------------------
+# LOGOUT
+# -------------------------------
 def logout_view(request):
     logout(request)
     return redirect("login")
