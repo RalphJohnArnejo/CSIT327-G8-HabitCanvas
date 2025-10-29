@@ -7,22 +7,31 @@ import os
 import dj_database_url
 from dotenv import load_dotenv
 
-# Load environment variables from .env
+# Load environment variables from .env (for local development)
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'
+# Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x3fd0)y%%vg-2$(zykdf+lvb=+=g2*2j1ma7hozg9g827tprhp'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# --------------------------
+# SECURITY & DEBUG SETTINGS
+# --------------------------
 
-# Allow all hosts in development; change this for production
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+# SECRET_KEY should come from Render Environment Variables
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 
-# Application definition
+# DEBUG is False in production, True only on local machine
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+# Allow all hosts — Render URL included
+ALLOWED_HOSTS = ['*']
+
+
+# --------------------------
+# APPLICATIONS
+# --------------------------
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -30,11 +39,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main',  # your main app
+    'main',
 ]
+
+
+# --------------------------
+# MIDDLEWARE
+# --------------------------
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ REQUIRED FOR RENDER STATIC FILES
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -43,15 +58,25 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'HabitCanvas.urls'
 
-# Templates configuration
+# --------------------------
+# URL / WSGI CONFIG
+# --------------------------
+
+ROOT_URLCONF = 'HabitCanvas.urls'
+WSGI_APPLICATION = 'HabitCanvas.wsgi.application'
+
+
+# --------------------------
+# TEMPLATES
+# --------------------------
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR / "main" / "templates",    # for general templates (landing, login, etc.)
-            BASE_DIR / "main" / "templates" / "registration",  # for password reset overrides
+            BASE_DIR / "main" / "templates",
+            BASE_DIR / "main" / "templates" / "registration",
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -65,18 +90,24 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'HabitCanvas.wsgi.application'
 
-# Database (Supabase Session Pooler)
+# --------------------------
+# DATABASE (Local = SQLite, Render = PostgreSQL)
+# --------------------------
+
 DATABASES = {
     "default": dj_database_url.config(
-        default="sqlite:///db.sqlite3",
+        default="sqlite:///db.sqlite3",   # fallback for local use
         conn_max_age=600,
         ssl_require=True
     )
 }
 
-# Password validation
+
+# --------------------------
+# PASSWORD VALIDATION
+# --------------------------
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
@@ -85,34 +116,40 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'main.validators.CustomPasswordValidator'},
 ]
 
-# Internationalization
+
+# --------------------------
+# INTERNATIONALIZATION
+# --------------------------
+
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Manila'  # set to your local timezone
+TIME_ZONE = 'Asia/Manila'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+
+# --------------------------
+# STATIC FILES (REQUIRED FOR RENDER)
+# --------------------------
+
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "main" / "static"]
+STATICFILES_DIRS = [BASE_DIR / "main" / "static"]  # assets inside your app
+STATIC_ROOT = BASE_DIR / "staticfiles"  # folder Render will collect static files into
 
-# Default primary key field type
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# WhiteNoise: compress & cache static files
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# Email backend (for password reset)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# When deploying, switch to:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Redirect to login when not authenticated
+# --------------------------
+# AUTH REDIRECTS
+# --------------------------
+
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Default homepage (landing page)
-# You don’t need to explicitly define it here; your urls.py handles "/" → landing_view
+
+# --------------------------
+# DEFAULT PRIMARY KEY
+# --------------------------
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
