@@ -1,0 +1,62 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="dashboard-section">
+    <h2 class="section-title">Your Tasks</h2>
+
+    <!-- ADD TASK FORM -->
+    <div class="task-actions" style="margin-bottom: 20px;">
+        <form action="{% url 'add_task' %}" method="POST" style="display:flex; gap:10px;">
+            {% csrf_token %}
+            {{ form.name }}
+            {{ form.description }}
+            {{ form.priority }}
+            <button type="submit" class="btn-primary">Add Task</button>
+        </form>
+    </div>
+
+    <!-- TASKS GRID -->
+    <div class="tasks-grid">
+        {% for task in tasks %}
+        <div class="task-card {% if task.completed %}completed{% endif %}">
+
+            <h3>
+                {{ task.name }}
+                {% if task.favorite %}
+                ⭐
+                {% endif %}
+            </h3>
+
+            <p>{{ task.description }}</p>
+
+            <p><strong>Priority:</strong> {{ task.priority }}</p>
+
+            <!-- ACTION BUTTONS -->
+            <div style="display:flex; gap:8px; margin-top:15px;">
+
+                <!-- Edit -->
+                <a href="{% url 'edit_task' task.id %}" class="btn-outline">Edit</a>
+
+                <!-- Delete -->
+                <a href="{% url 'delete_task' task.id %}" class="btn-outline"
+                    onclick="return confirm('Delete this task?');">Delete</a>
+
+                <!-- Complete -->
+                <a href="{% url 'toggle_complete' task.id %}" class="btn-outline">
+                    {% if task.completed %}Undo{% else %}Complete{% endif %}
+                </a>
+
+                <!-- Favorite -->
+                <a href="{% url 'toggle_favorite' task.id %}" class="btn-outline">
+                    {% if task.favorite %}Unfavorite{% else %}Favorite{% endif %}
+                </a>
+            </div>
+
+        </div>
+        {% empty %}
+        <p>No tasks added yet.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

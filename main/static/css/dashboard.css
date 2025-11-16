@@ -1,0 +1,305 @@
+/* ========== RESET ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    background: #f6f6f6;
+    color: #222;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========== TOP NAVIGATION ========== */
+.top-nav {
+    background: white;
+    padding: 15px 40px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.top-nav .left,
+.top-nav .right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-img {
+    height: 35px;
+    width: 35px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.nav-center {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: #555;
+    transition: 0.2s;
+}
+
+.nav-btn:hover {
+    background: #e8f0ff;
+    color: #1e57ff;
+}
+
+.nav-btn.active {
+    background: #e8f0ff;
+    color: #1e57ff;
+    font-weight: 600;
+}
+
+.btn-logout {
+    background: #e0e7ff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1e57ff;
+    transition: 0.2s;
+}
+
+.btn-logout:hover {
+    background: #cdd8ff;
+}
+
+/* ========== PAGE CONTENT ========== */
+.page-container {
+    width: 75%;
+    margin: 30px auto;
+}
+
+/* Header row (My Tasks + Add Button) */
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-row h2 {
+    font-size: 1.7rem;
+    font-weight: 600;
+}
+
+.subtext {
+    color: #777;
+    margin-top: 2px;
+}
+
+/* Add button */
+.btn-primary {
+    background: #1e57ff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+}
+
+.btn-primary:hover {
+    background: #1647cc;
+}
+
+/* ========== FILTERS ========== */
+.filters {
+    display: flex;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.filters select {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    background: white;
+}
+
+/* ========== TASK CARD DESIGN ========== */
+.task-card {
+    background: white;
+    border: 1px solid #cde1ff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.left {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.circle {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #5b9bff;
+    border-radius: 50%;
+}
+
+.checked {
+    background: #4CAF50;
+    border-color: #4CAF50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.task-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.crossed {
+    text-decoration: none; /* remove strikethrough */
+    color: #777;
+}
+
+.tag {
+    background: #e8efff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1e57ff;
+    margin-top: 4px;
+}
+
+/* ========== TASK CARD RIGHT ACTIONS ========== */
+.right {
+    display: flex;
+    align-items: center;
+}
+
+.right a {
+    text-decoration: none; /* remove underline/underscore */
+    color: inherit;
+}
+
+.right i {
+    margin-left: 15px;
+    cursor: pointer;
+    color: #555;
+    transition: 0.2s;
+}
+
+.right i:hover {
+    color: #1e57ff;
+}
+
+.starred {
+    color: gold !important;
+}
+
+.completed-title {
+    margin: 25px 0 10px;
+    font-size: 1.2rem;
+    color: #555;
+}
+
+/* Completed task card */
+.task-card.completed {
+    opacity: 0.7;
+    border-color: #d3d3d3;
+}
+
+/* ========== FOOTER ========== */
+footer {
+    margin-top: auto;
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+    color: #777;
+}
+
+/* ========== MODAL STYLING ========== */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 30px 25px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.modal .close {
+    position: absolute;
+    right: 15px;
+    top: 12px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #555;
+    transition: 0.2s;
+}
+
+.modal .close:hover {
+    color: #1e57ff;
+}
+
+/* Modal form inputs */
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content form label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.modal-content form input {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+}
+
+.modal-content form button.btn-primary {
+    width: 100%;
+    justify-content: center;
+}
