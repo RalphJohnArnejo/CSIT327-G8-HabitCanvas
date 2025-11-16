@@ -1,11 +1,279 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitCanvas | Tasks</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
-<h2>Welcome, {{ user.username }}</h2>
-<p>This is your dashboard.</p>
-<a href="/logout/">Logout</a>
+
+<!-- NAVIGATION -->
+<header class="top-nav">
+    <div class="left">
+        <img src="{% static 'habitcanvass.jpg' %}" class="logo-img">
+        <span class="logo-text">HabitCanvas</span>
+    </div>
+
+    <div class="nav-center">
+        <a class="nav-btn active"><i class="fa fa-list"></i> Tasks</a>
+        <a class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
+        <a class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
+    </div>
+
+    <div class="right">
+        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+    </div>
+</header>
+
+<!-- TASKS CONTAINER -->
+<div class="page-container">
+    <div class="header-row">
+        <div>
+            <h2>My Tasks</h2>
+
+            <!-- Dynamic Active Task Counter -->
+            <p class="subtext">
+                <span id="activeTaskCount">{{ active_count }}</span> active tasks
+            </p>
+        </div>
+
+        <!-- Open Modal Button -->
+        <a href="#" class="btn-primary" id="openModalBtn">
+            <i class="fa fa-plus"></i> Add new task
+        </a>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+        <select><option>Default</option></select>
+        <select><option>All Categories</option></select>
+    </div>
+
+    <div class="task-list">
+
+        <!-- ACTIVE TASKS -->
+        <div id="active-tasks">
+            {% for task in tasks %}
+                {% if not task.completed %}
+                    {% include "main/partials/task_card.html" with task=task %}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <h3 class="completed-title">Completed Tasks</h3>
+
+        <!-- COMPLETED TASKS -->
+        <div id="completed-tasks">
+            {% for task in tasks %}
+                {% if task.completed %}
+                    {% include "main/partials/task_card.html" with task=task %}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div id="taskModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Add New Task</h2>
+
+        <form id="addTaskForm" method="POST" action="{% url 'add_task' %}">
+            {% csrf_token %}
+
+            <label for="title">Task Title</label>
+            <input type="text" name="title" id="title" required>
+
+            <label for="category">Category</label>
+            <select name="category" id="category" required>
+                <option value="School">School</option>
+                <option value="Personal">Personal</option>
+                <option value="Work">Work</option>
+            </select>
+
+            <label for="difficulty">Difficulty</label>
+            <select name="difficulty" id="difficulty" required>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+            </select>
+
+            <label for="due_date">Due Date</label>
+            <input type="date" name="due_date" id="due_date">
+
+            <label for="priority">Priority</label>
+            <select name="priority" id="priority">
+                <option value="0">Low</option>
+                <option value="1">Medium</option>
+                <option value="2">High</option>
+            </select>
+
+            <button type="submit" class="btn-primary">Add Task</button>
+        </form>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    © 2025 HabitCanvas | Cebu Institute of Technology - University
+</footer>
+
+<!-- JAVASCRIPT -->
+<script>
+/* ---------------------------
+   CSRF Helper
+---------------------------- */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/* ---------------------------
+   Refresh Active Task Counter
+---------------------------- */
+function refreshActiveCount() {
+    const activeTasks = document.querySelectorAll("#active-tasks .task-card");
+    document.getElementById("activeTaskCount").textContent = activeTasks.length;
+}
+
+/* ---------------------------
+   Modal Open / Close
+---------------------------- */
+const modal = document.getElementById("taskModal");
+const openBtn = document.getElementById("openModalBtn");
+const closeBtn = document.querySelector(".modal .close");
+
+openBtn.onclick = e => {
+    e.preventDefault();
+    modal.style.display = "block";
+};
+
+closeBtn.onclick = () => modal.style.display = "none";
+
+window.onclick = event => {
+    if (event.target === modal) modal.style.display = "none";
+};
+
+/* ---------------------------
+   ADD TASK (AJAX)
+---------------------------- */
+const form = document.getElementById("addTaskForm");
+
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(form);
+
+    fetch("{% url 'add_task' %}", {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            modal.style.display = "none";
+
+            // Insert new task into active list
+            document.getElementById("active-tasks")
+                .insertAdjacentHTML("beforeend", data.task_html);
+
+            refreshActiveCount();
+            form.reset();
+        }
+    });
+});
+
+/* ---------------------------
+   TOGGLE COMPLETE (AJAX)
+---------------------------- */
+document.addEventListener("click", function(e) {
+    const btn = e.target.closest(".complete-btn");
+    if (!btn) return;
+
+    e.preventDefault();
+    const taskId = btn.dataset.id;
+
+    fetch(`/tasks/toggle_complete/${taskId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) return;
+
+        const taskCard = btn.closest(".task-card");
+        const circleIcon = taskCard.querySelector(".circle i");
+        const circleDiv = taskCard.querySelector(".circle");
+        const title = taskCard.querySelector(".task-title");
+        const icon = btn.querySelector("i");
+
+        if (data.completed) {
+            document.getElementById("completed-tasks").appendChild(taskCard);
+            circleDiv.classList.add("checked");
+            circleIcon.style.display = "inline-block";
+            title.classList.add("crossed");
+            icon.classList.remove("fa-check");
+            icon.classList.add("fa-rotate-left");
+        } else {
+            document.getElementById("active-tasks").appendChild(taskCard);
+            circleDiv.classList.remove("checked");
+            circleIcon.style.display = "none";
+            title.classList.remove("crossed");
+            icon.classList.remove("fa-rotate-left");
+            icon.classList.add("fa-check");
+        }
+
+        refreshActiveCount();
+    });
+});
+
+/* ---------------------------
+   DELETE TASK (AJAX)
+---------------------------- */
+document.addEventListener("click", function(e) {
+    const btn = e.target.closest(".delete-btn");
+    if (!btn) return;
+
+    e.preventDefault();
+    const taskId = btn.dataset.id;
+    const taskCard = btn.closest(".task-card");
+
+    fetch(`/tasks/delete/${taskId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            taskCard.remove();
+            refreshActiveCount();
+        }
+    });
+});
+</script>
+
 </body>
 </html>
