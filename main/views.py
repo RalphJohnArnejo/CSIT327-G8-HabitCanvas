@@ -5,9 +5,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
 
 from .models import LoginAttempt, Task
 from .forms import TaskForm
+
 
 # ============================================================
 # LANDING PAGE
@@ -86,57 +88,55 @@ def login_view(request):
 # ============================================================
 # DASHBOARD
 # ============================================================
+@login_required
 def dashboard_view(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
-
     tasks = Task.objects.filter(user=request.user)
-    difficulty = request.GET.get("difficulty")
-    category = request.GET.get("category")
 
-    if difficulty:
-        tasks = tasks.filter(difficulty=difficulty)
+    # --- FILTERS ---
+    category = request.GET.get("category")
+    difficulty = request.GET.get("difficulty")
+    sort = request.GET.get("sort", "default")
+
     if category:
         tasks = tasks.filter(category=category)
+    if difficulty:
+        tasks = tasks.filter(difficulty=difficulty)
 
-    form = TaskForm()
+    # --- SORTING ---
+    if sort == "priority":
+        tasks = tasks.order_by("-priority", "-id")  # High priority first
+    else:
+        tasks = tasks.order_by("-id")  # Default: newest first
 
-    # Count active (not completed) tasks
+    # --- OTHER CONTEXT ---
     active_count = tasks.filter(completed=False).count()
+    form = TaskForm()
 
     context = {
         "tasks": tasks,
         "form": form,
         "active_count": active_count,
     }
-
     return render(request, "main/dashboard.html", context)
+
+
 
 
 
 # ============================================================
 # LOGOUT
 # ============================================================
+@login_required
 def logout_view(request):
     logout(request)
     return redirect("login")
 
 
 # ============================================================
-# TASK LIST (for URL reference)
-# ============================================================
-def task_list(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
-
-    tasks = Task.objects.filter(user=request.user).order_by("-priority", "-favorite")
-    form = TaskForm()
-    return render(request, "main/dashboard.html", {"tasks": tasks, "form": form})
-
-
-# ============================================================
 # TASK ACTIONS
 # ============================================================
+
+@login_required
 def add_task(request):
     if request.method == "POST":
         form = TaskForm(request.POST)
@@ -148,32 +148,33 @@ def add_task(request):
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 task_html = render_to_string("main/partials/task_card.html", {"task": task}, request=request)
                 return JsonResponse({"success": True, "task_html": task_html})
-    
+
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
             return JsonResponse({"success": False, "errors": form.errors})
-        
 
     return redirect("dashboard")
 
 
+@login_required
 def edit_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id, user=request.user)
-
-    if request.method == "POST":
+    """
+    Edit Task via AJAX modal. Expects POST with form data.
+    Returns JSON with updated task card HTML.
+    """
+    if request.method == "POST" and request.headers.get("x-requested-with") == "XMLHttpRequest":
+        task = get_object_or_404(Task, id=task_id, user=request.user)
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
-            if request.headers.get("x-requested-with") == "XMLHttpRequest":
-                return JsonResponse({"success": True})
-            return redirect("dashboard")
-
-        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            task_html = render_to_string("main/partials/task_card.html", {"task": task}, request=request)
+            return JsonResponse({"success": True, "task_html": task_html, "task_id": task.id})
+        else:
             return JsonResponse({"success": False, "errors": form.errors})
 
-    form = TaskForm(instance=task)
-    return render(request, "main/edit_modal.html", {"form": form, "task": task})
+    return JsonResponse({"success": False, "error": "Invalid request"})
 
 
+@login_required
 def delete_task(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
     task.delete()
@@ -182,6 +183,7 @@ def delete_task(request, task_id):
     return redirect("dashboard")
 
 
+@login_required
 def toggle_complete(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
     task.completed = not task.completed
@@ -191,6 +193,7 @@ def toggle_complete(request, task_id):
     return redirect("dashboard")
 
 
+@login_required
 def toggle_favorite(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
     task.favorite = not task.favorite

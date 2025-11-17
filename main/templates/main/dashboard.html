@@ -2,14 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HabitCanvas | Tasks</title>
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HabitCanvas | Tasks</title>
+<link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-
 <body>
 
 <!-- NAVIGATION -->
@@ -18,43 +17,54 @@
         <img src="{% static 'habitcanvass.jpg' %}" class="logo-img">
         <span class="logo-text">HabitCanvas</span>
     </div>
-
     <div class="nav-center">
         <a class="nav-btn active"><i class="fa fa-list"></i> Tasks</a>
         <a class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
         <a class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
     </div>
-
     <div class="right">
         <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
     </div>
 </header>
 
-<!-- TASKS CONTAINER -->
+<!-- PAGE CONTAINER -->
 <div class="page-container">
     <div class="header-row">
         <div>
             <h2>My Tasks</h2>
-
             <p class="subtext">
                 <span id="activeTaskCount">{{ active_count }}</span> active tasks
             </p>
         </div>
-
-        <!-- Open Add Task Modal Button -->
-        <a href="#" class="btn-primary" id="openModalBtn">
-            <i class="fa fa-plus"></i> Add new task
-        </a>
+        <a href="#" class="btn-primary" id="openAddBtn"><i class="fa fa-plus"></i> Add new task</a>
     </div>
 
     <!-- FILTERS -->
     <div class="filters">
-        <select><option>Default</option></select>
-        <select><option>All Categories</option></select>
+        <form method="GET" id="filterForm">
+            <select name="sort" onchange="this.form.submit()">
+                <option value="default" {% if request.GET.sort == 'default' or not request.GET.sort %}selected{% endif %}>Default</option>
+                <option value="priority" {% if request.GET.sort == 'priority' %}selected{% endif %}>Priority</option>
+            </select>
+
+            <select name="category" onchange="this.form.submit()">
+                <option value="" {% if not request.GET.category %}selected{% endif %}>All Categories</option>
+                <option value="School" {% if request.GET.category == 'School' %}selected{% endif %}>School</option>
+                <option value="Personal" {% if request.GET.category == 'Personal' %}selected{% endif %}>Personal</option>
+                <option value="Work" {% if request.GET.category == 'Work' %}selected{% endif %}>Work</option>
+            </select>
+
+            <select name="difficulty" onchange="this.form.submit()">
+                <option value="" {% if not request.GET.difficulty %}selected{% endif %}>All Difficulty</option>
+                <option value="Easy" {% if request.GET.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
+                <option value="Medium" {% if request.GET.difficulty == 'Medium' %}selected{% endif %}>Medium</option>
+                <option value="Hard" {% if request.GET.difficulty == 'Hard' %}selected{% endif %}>Hard</option>
+            </select>
+        </form>
     </div>
 
+    <!-- TASK LIST -->
     <div class="task-list">
-        <!-- ACTIVE TASKS -->
         <div id="active-tasks">
             {% for task in tasks %}
                 {% if not task.completed %}
@@ -64,8 +74,6 @@
         </div>
 
         <h3 class="completed-title">Completed Tasks</h3>
-
-        <!-- COMPLETED TASKS -->
         <div id="completed-tasks">
             {% for task in tasks %}
                 {% if task.completed %}
@@ -77,140 +85,256 @@
 </div>
 
 <!-- ADD TASK MODAL -->
-<div id="taskModal" class="modal">
+<div id="addModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Add New Task</h2>
-
         <form id="addTaskForm" method="POST" action="{% url 'add_task' %}">
             {% csrf_token %}
-
             <label for="title">Task Title</label>
             <input type="text" name="title" id="title" required>
-
             <label for="category">Category</label>
             <select name="category" id="category" required>
                 <option value="School">School</option>
                 <option value="Personal">Personal</option>
                 <option value="Work">Work</option>
             </select>
-
             <label for="difficulty">Difficulty</label>
             <select name="difficulty" id="difficulty" required>
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
             </select>
-
             <label for="due_date">Due Date</label>
             <input type="date" name="due_date" id="due_date">
-
             <label for="priority">Priority</label>
             <select name="priority" id="priority">
                 <option value="0">Low</option>
                 <option value="1">Medium</option>
                 <option value="2">High</option>
             </select>
-
             <button type="submit" class="btn-primary">Add Task</button>
         </form>
     </div>
 </div>
 
 <!-- EDIT TASK MODAL -->
-<div id="editTaskModal" class="modal">
+<div id="editModal" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Edit Task</h2>
-
-        <form id="editTaskForm" method="POST">
-            {% csrf_token %}
-
+        <form id="editTaskForm" method="POST">{% csrf_token %}
             <label for="edit_title">Task Title</label>
             <input type="text" name="title" id="edit_title" required>
-
             <label for="edit_category">Category</label>
             <select name="category" id="edit_category" required>
                 <option value="School">School</option>
                 <option value="Personal">Personal</option>
                 <option value="Work">Work</option>
             </select>
-
             <label for="edit_difficulty">Difficulty</label>
             <select name="difficulty" id="edit_difficulty" required>
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
             </select>
-
             <label for="edit_due_date">Due Date</label>
             <input type="date" name="due_date" id="edit_due_date">
-
             <label for="edit_priority">Priority</label>
             <select name="priority" id="edit_priority">
                 <option value="0">Low</option>
                 <option value="1">Medium</option>
                 <option value="2">High</option>
             </select>
-
             <button type="submit" class="btn-primary">Save Changes</button>
         </form>
     </div>
 </div>
 
-<!-- FOOTER -->
 <footer>
     © 2025 HabitCanvas | Cebu Institute of Technology - University
 </footer>
 
-<!-- JAVASCRIPT -->
 <script>
 /* ---------------------------
-   Modal Open / Close (Add Task)
+   CSRF Helper
 ---------------------------- */
-const addModal = document.getElementById("taskModal");
-const openAddBtn = document.getElementById("openModalBtn");
-const closeAdd = addModal.querySelector(".close");
+function getCookie(name){
+    let cookieValue = null;
+    if(document.cookie!==""){
+        document.cookie.split(";").map(c=>c.trim()).forEach(cookie=>{
+            if(cookie.startsWith(name+"=")) cookieValue=decodeURIComponent(cookie.substring(name.length+1));
+        });
+    }
+    return cookieValue;
+}
 
-openAddBtn.onclick = e => {
-    e.preventDefault();
-    addModal.style.display = "block";
-};
+/* ---------------------------
+   Active Count + Sort
+---------------------------- */
+function refreshActiveCount(){
+    document.getElementById("activeTaskCount").textContent = document.querySelectorAll("#active-tasks .task-card").length;
+}
 
-closeAdd.onclick = () => addModal.style.display = "none";
-window.onclick = event => {
-    if (event.target === addModal) addModal.style.display = "none";
+function sortTasksByPriority(){
+    const container = document.getElementById("active-tasks");
+    Array.from(container.querySelectorAll(".task-card"))
+        .sort((a,b)=>Number(b.dataset.priority)-Number(a.dataset.priority))
+        .forEach(task=>container.appendChild(task));
+}
+
+/* ---------------------------
+   MODALS
+---------------------------- */
+const addModal=document.getElementById("addModal");
+const openAddBtn=document.getElementById("openAddBtn");
+const closeAdd=addModal.querySelector(".close");
+openAddBtn.onclick=e=>{e.preventDefault(); addModal.style.display="block";}
+closeAdd.onclick=()=>addModal.style.display="none";
+
+const editModal=document.getElementById("editModal");
+const editForm=document.getElementById("editTaskForm");
+const closeEdit=editModal.querySelector(".close");
+let currentEditId=null;
+
+function openEditModal(btn){
+    currentEditId=btn.dataset.id;
+    editForm.action=`/tasks/edit/${currentEditId}/`;
+    document.getElementById("edit_title").value=btn.dataset.title;
+    document.getElementById("edit_category").value=btn.dataset.category;
+    document.getElementById("edit_difficulty").value=btn.dataset.difficulty;
+    document.getElementById("edit_priority").value=btn.dataset.priority;
+    document.getElementById("edit_due_date").value=btn.dataset.due;
+    editModal.style.display="block";
+}
+
+document.querySelectorAll(".edit-btn").forEach(btn=>{
+    btn.addEventListener("click",()=> openEditModal(btn));
+});
+
+closeEdit.onclick=()=>editModal.style.display="none";
+
+window.onclick=e=>{
+    if(e.target===addModal) addModal.style.display="none";
+    if(e.target===editModal) editModal.style.display="none";
 };
 
 /* ---------------------------
-   Modal Open / Close (Edit Task)
+   ADD TASK (AJAX)
 ---------------------------- */
-const editModal = document.getElementById("editTaskModal");
-const editForm = document.getElementById("editTaskForm");
-const closeEdit = editModal.querySelector(".close");
-
-document.querySelectorAll(".edit-btn").forEach(btn => {
-    btn.addEventListener("click", e => {
-        e.preventDefault();
-
-        const id = btn.dataset.id;
-        editForm.action = `/tasks/edit/${id}/`;  // update form URL
-
-        // Prefill values
-        document.getElementById("edit_title").value = btn.dataset.title;
-        document.getElementById("edit_category").value = btn.dataset.category;
-        document.getElementById("edit_difficulty").value = btn.dataset.difficulty;
-        document.getElementById("edit_due_date").value = btn.dataset.due;
-        document.getElementById("edit_priority").value = btn.dataset.priority;
-
-        editModal.style.display = "block";
+document.getElementById("addTaskForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    const formData=new FormData(this);
+    fetch("{% url 'add_task' %}",{
+        method:"POST",
+        body:formData,
+        headers:{"X-Requested-With":"XMLHttpRequest"}
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.success){
+            addModal.style.display="none";
+            document.getElementById("active-tasks").insertAdjacentHTML("beforeend",data.task_html);
+            sortTasksByPriority();
+            refreshActiveCount();
+            this.reset();
+            attachTaskEvents(); // reapply events for new buttons
+        }
     });
 });
 
-closeEdit.onclick = () => editModal.style.display = "none";
-window.onclick = event => {
-    if (event.target === editModal) editModal.style.display = "none";
-};
+/* ---------------------------
+   EDIT TASK (AJAX)
+---------------------------- */
+editForm.addEventListener("submit",e=>{
+    e.preventDefault();
+    const formData=new FormData(editForm);
+    fetch(editForm.action,{
+        method:"POST",
+        body:formData,
+        headers:{"X-Requested-With":"XMLHttpRequest"}
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.success){
+            const oldCard = document.querySelector(`.task-card[data-id="${data.task_id}"]`);
+            oldCard.outerHTML = data.task_html;
+            editModal.style.display="none";
+            refreshActiveCount();
+            sortTasksByPriority();
+            attachTaskEvents(); // reapply events for edit buttons
+        }else{
+            console.log(data.errors);
+            alert("Failed to update task!");
+        }
+    });
+});
+
+/* ---------------------------
+   TOGGLE COMPLETE & DELETE (AJAX)
+---------------------------- */
+function attachTaskEvents(){
+    document.querySelectorAll(".complete-btn, .delete-btn, .edit-btn").forEach(btn=>{
+        btn.onclick = null; // reset
+    });
+
+    document.querySelectorAll(".edit-btn").forEach(btn=>{
+        btn.onclick = e=>{
+            e.preventDefault();
+            openEditModal(btn);
+        };
+    });
+
+    document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn=>{
+        btn.onclick = e=>{
+            e.preventDefault();
+            const taskId = btn.dataset.id;
+            const isComplete = btn.classList.contains("complete-btn");
+
+            fetch(isComplete ? `/tasks/toggle_complete/${taskId}/` : `/tasks/delete/${taskId}/`,{
+                method:"POST",
+                headers:{
+                    "X-CSRFToken":getCookie("csrftoken"),
+                    "X-Requested-With":"XMLHttpRequest"
+                }
+            })
+            .then(res=>res.json())
+            .then(data=>{
+                if(data.success){
+                    if(isComplete){
+                        const card = btn.closest(".task-card");
+                        const circle = card.querySelector(".circle");
+                        const icon = btn.querySelector("i");
+
+                        if(data.completed){
+                            document.getElementById("completed-tasks").appendChild(card);
+                            card.querySelector(".task-title").classList.add("crossed");
+                            circle.classList.add("checked");
+                            icon.classList.remove("fa-check");
+                            icon.classList.add("fa-rotate-left");
+                            circle.querySelector("i").style.display="block";
+                        }else{
+                            document.getElementById("active-tasks").appendChild(card);
+                            card.querySelector(".task-title").classList.remove("crossed");
+                            circle.classList.remove("checked");
+                            icon.classList.remove("fa-rotate-left");
+                            icon.classList.add("fa-check");
+                            circle.querySelector("i").style.display="none";
+                            sortTasksByPriority();
+                        }
+                        refreshActiveCount(); // <-- refresh active task count
+                    }else{
+                        btn.closest(".task-card").remove();
+                        refreshActiveCount(); // <-- refresh after delete
+                    }
+                }
+            });
+        };
+    });
+}
+
+// Attach events initially
+attachTaskEvents();
 </script>
 
 </body>
