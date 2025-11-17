@@ -36,7 +36,6 @@
         <div>
             <h2>My Tasks</h2>
 
-            <!-- Dynamic Active Task Counter -->
             <p class="subtext">
                 <span id="activeTaskCount">{{ active_count }}</span> active tasks
             </p>
@@ -154,6 +153,20 @@ function refreshActiveCount() {
 }
 
 /* ---------------------------
+   Sort Tasks by Priority
+---------------------------- */
+function sortTasksByPriority() {
+    const container = document.getElementById("active-tasks");
+    const tasks = Array.from(container.querySelectorAll(".task-card"));
+
+    tasks.sort((a, b) => {
+        return Number(b.dataset.priority) - Number(a.dataset.priority);  
+    });
+
+    tasks.forEach(task => container.appendChild(task));
+}
+
+/* ---------------------------
    Modal Open / Close
 ---------------------------- */
 const modal = document.getElementById("taskModal");
@@ -190,10 +203,10 @@ form.addEventListener("submit", function(e) {
         if (data.success) {
             modal.style.display = "none";
 
-            // Insert new task into active list
             document.getElementById("active-tasks")
                 .insertAdjacentHTML("beforeend", data.task_html);
 
+            sortTasksByPriority();
             refreshActiveCount();
             form.reset();
         }
@@ -241,6 +254,8 @@ document.addEventListener("click", function(e) {
             title.classList.remove("crossed");
             icon.classList.remove("fa-rotate-left");
             icon.classList.add("fa-check");
+
+            sortTasksByPriority();
         }
 
         refreshActiveCount();

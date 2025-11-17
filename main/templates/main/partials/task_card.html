@@ -1,4 +1,5 @@
-<div class="task-card {% if task.completed %}completed{% endif %}">
+<div class="task-card {% if task.completed %}completed{% endif %}" 
+     data-priority="{{ task.priority }}" data-id="{{ task.id }}">
     <div class="left">
         <!-- Completion Circle -->
         <div class="circle {% if task.completed %}checked{% endif %}">
