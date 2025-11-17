@@ -1,9 +1,9 @@
 <div class="task-card {% if task.completed %}completed{% endif %}" 
-     data-priority="{{ task.priority }}" data-id="{{ task.id }}">
+     data-priority="{{ task.priority }}" 
+     data-id="{{ task.id }}">
     <div class="left">
         <!-- Completion Circle -->
         <div class="circle {% if task.completed %}checked{% endif %}">
-            <!-- Always exists, just toggle display -->
             <i class="fa fa-check" {% if not task.completed %}style="display:none"{% endif %}></i>
         </div>
 
@@ -25,7 +25,13 @@
         </a>
 
         <!-- Edit Button -->
-        <a href="{% url 'edit_task' task.id %}" class="edit-btn" data-id="{{ task.id }}">
+        <a href="#" class="edit-btn"
+           data-id="{{ task.id }}"
+           data-title="{{ task.title }}"
+           data-category="{{ task.category }}"
+           data-difficulty="{{ task.difficulty }}"
+           data-priority="{{ task.priority }}"
+           data-due="{{ task.due_date|default_if_none:'' }}">
             <i class="fa fa-pen"></i>
         </a>
 
@@ -35,7 +41,7 @@
         </a>
 
         <!-- Complete Button -->
-        <a href="{% url 'toggle_complete' task.id %}" class="complete-btn" data-id="{{ task.id }}">
+        <a href="#" class="complete-btn" data-id="{{ task.id }}">
             <i class="fa {% if task.completed %}fa-rotate-left{% else %}fa-check{% endif %}"></i>
         </a>
     </div>
