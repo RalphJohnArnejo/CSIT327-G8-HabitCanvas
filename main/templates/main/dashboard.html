@@ -189,7 +189,7 @@ function sortTasksByPriority(){
 const addModal=document.getElementById("addModal");
 const openAddBtn=document.getElementById("openAddBtn");
 const closeAdd=addModal.querySelector(".close");
-openAddBtn.onclick=e=>{e.preventDefault(); addModal.style.display="block";}
+openAddBtn.onclick=e=>{e.preventDefault(); addModal.style.display="block";};
 closeAdd.onclick=()=>addModal.style.display="none";
 
 const editModal=document.getElementById("editModal");
@@ -238,7 +238,7 @@ document.getElementById("addTaskForm").addEventListener("submit",function(e){
             sortTasksByPriority();
             refreshActiveCount();
             this.reset();
-            attachTaskEvents(); // reapply events for new buttons
+            attachTaskEvents();
         }
     });
 });
@@ -262,22 +262,24 @@ editForm.addEventListener("submit",e=>{
             editModal.style.display="none";
             refreshActiveCount();
             sortTasksByPriority();
-            attachTaskEvents(); // reapply events for edit buttons
+            attachTaskEvents();
         }else{
-            console.log(data.errors);
             alert("Failed to update task!");
         }
     });
 });
 
 /* ---------------------------
-   TOGGLE COMPLETE & DELETE (AJAX)
+   TOGGLE COMPLETE, DELETE, FAVORITE (AJAX)
 ---------------------------- */
 function attachTaskEvents(){
-    document.querySelectorAll(".complete-btn, .delete-btn, .edit-btn").forEach(btn=>{
-        btn.onclick = null; // reset
+
+    /* Reset previous events */
+    document.querySelectorAll(".complete-btn, .delete-btn, .edit-btn, .favorite-btn").forEach(btn=>{
+        btn.onclick = null;
     });
 
+    /* EDIT BUTTON */
     document.querySelectorAll(".edit-btn").forEach(btn=>{
         btn.onclick = e=>{
             e.preventDefault();
@@ -285,6 +287,7 @@ function attachTaskEvents(){
         };
     });
 
+    /* COMPLETE + DELETE */
     document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn=>{
         btn.onclick = e=>{
             e.preventDefault();
@@ -322,20 +325,50 @@ function attachTaskEvents(){
                             circle.querySelector("i").style.display="none";
                             sortTasksByPriority();
                         }
-                        refreshActiveCount(); // <-- refresh active task count
+                        refreshActiveCount();
                     }else{
                         btn.closest(".task-card").remove();
-                        refreshActiveCount(); // <-- refresh after delete
+                        refreshActiveCount();
                     }
                 }
             });
         };
     });
+
+    /* ⭐ FAVORITE BUTTON */
+    document.querySelectorAll(".favorite-btn").forEach(btn=>{
+        btn.onclick = e=>{
+            e.preventDefault();
+            const taskId = btn.dataset.id;
+
+            fetch(`/tasks/toggle_favorite/${taskId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With":"XMLHttpRequest"
+                }
+            })
+            .then(res=>res.json())
+            .then(data=>{
+                if(data.success){
+                    const icon = btn.querySelector("i");
+
+                    if(data.favorite){
+                        icon.classList.add("starred");
+                    }else{
+                        icon.classList.remove("starred");
+                    }
+                }
+            });
+        };
+    });
+
 }
 
 // Attach events initially
 attachTaskEvents();
 </script>
+
 
 </body>
 </html>

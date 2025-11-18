@@ -1,6 +1,5 @@
 <div class="task-card {% if task.completed %}completed{% endif %}" 
-     data-priority="{{ task.priority }}" 
-     data-id="{{ task.id }}">
+     data-priority="{{ task.priority }}" data-id="{{ task.id }}">
     <div class="left">
         <!-- Completion Circle -->
         <div class="circle {% if task.completed %}checked{% endif %}">
@@ -20,9 +19,10 @@
 
     <div class="right">
         <!-- Favorite Button -->
-        <a href="{% url 'toggle_favorite' task.id %}" class="favorite-btn" data-id="{{ task.id }}">
-            <i class="fa fa-star {% if task.favorite %}starred{% endif %}"></i>
+        <a href="#" class="favorite-btn" data-id="{{ task.id }}">
+            <i class="fa fa-star {% if task.favorite %}favorited{% endif %}"></i>
         </a>
+
 
         <!-- Edit Button -->
         <a href="#" class="edit-btn"
@@ -31,9 +31,10 @@
            data-category="{{ task.category }}"
            data-difficulty="{{ task.difficulty }}"
            data-priority="{{ task.priority }}"
-           data-due="{{ task.due_date|default_if_none:'' }}">
+        data-due="{{ task.due_date|default_if_none:'' }}">
             <i class="fa fa-pen"></i>
         </a>
+
 
         <!-- Delete Button -->
         <a href="{% url 'delete_task' task.id %}" class="delete-btn" data-id="{{ task.id }}">
@@ -41,7 +42,7 @@
         </a>
 
         <!-- Complete Button -->
-        <a href="#" class="complete-btn" data-id="{{ task.id }}">
+        <a href="{% url 'toggle_complete' task.id %}" class="complete-btn" data-id="{{ task.id }}">
             <i class="fa {% if task.completed %}fa-rotate-left{% else %}fa-check{% endif %}"></i>
         </a>
     </div>
