@@ -104,11 +104,10 @@ def dashboard_view(request):
 
     # --- SORTING ---
     if sort == "priority":
-        tasks = tasks.order_by("-priority", "-id")  # High priority first
+        tasks = tasks.order_by("-priority", "-id")
     else:
-        tasks = tasks.order_by("-id")  # Default: newest first
+        tasks = tasks.order_by("-id")
 
-    # --- OTHER CONTEXT ---
     active_count = tasks.filter(completed=False).count()
     form = TaskForm()
 
@@ -120,7 +119,13 @@ def dashboard_view(request):
     return render(request, "main/dashboard.html", context)
 
 
-
+# ============================================================
+# TIMER PAGE (NEW)
+# ============================================================
+@login_required
+def timer_view(request):
+    """Renders the Pomodoro Timer page."""
+    return render(request, "main/timer.html")
 
 
 # ============================================================
@@ -135,7 +140,6 @@ def logout_view(request):
 # ============================================================
 # TASK ACTIONS
 # ============================================================
-
 @login_required
 def add_task(request):
     if request.method == "POST":
@@ -157,10 +161,6 @@ def add_task(request):
 
 @login_required
 def edit_task(request, task_id):
-    """
-    Edit Task via AJAX modal. Expects POST with form data.
-    Returns JSON with updated task card HTML.
-    """
     if request.method == "POST" and request.headers.get("x-requested-with") == "XMLHttpRequest":
         task = get_object_or_404(Task, id=task_id, user=request.user)
         form = TaskForm(request.POST, instance=task)
