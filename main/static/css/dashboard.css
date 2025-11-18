@@ -15,6 +15,12 @@ body {
 }
 
 /* ========== TOP NAVIGATION ========== */
+.nav-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .top-nav {
     background: white;
     padding: 15px 40px;
@@ -143,20 +149,27 @@ body {
 
 /* ========== TASK CARD DESIGN ========== */
 .task-card {
+    position: relative; /* for absolute positioning of deadline */
     background: white;
     border: 1px solid #cde1ff;
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 15px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 }
 
 .left {
     display: flex;
-    gap: 15px;
     align-items: center;
+    gap: 15px;
+    flex: 1 1 auto; /* allows left section to shrink without moving deadline */
+}
+
+.left > div:first-of-type {
+    display: flex;
+    flex-direction: column;
 }
 
 .circle {
@@ -164,15 +177,20 @@ body {
     height: 22px;
     border: 2px solid #5b9bff;
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .checked {
     background: #4CAF50;
     border-color: #4CAF50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     color: white;
+}
+
+.title-category {
+    display: flex;
+    flex-direction: column;
 }
 
 .task-title {
@@ -181,7 +199,7 @@ body {
 }
 
 .crossed {
-    text-decoration: none; /* remove strikethrough */
+    text-decoration: none; 
     color: #777;
 }
 
@@ -194,19 +212,42 @@ body {
     margin-top: 4px;
 }
 
+/* ====== TASK DEADLINE (CENTERED) ====== */
+.task-card .task-deadline {
+    position: absolute;  /* stays fixed in the center of card */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    color: #555;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    pointer-events: none; /* allow clicks on left/right */
+}
+
+.task-card .task-deadline i {
+    font-size: 10px;
+    color: #777;
+}
+
 /* ========== TASK CARD RIGHT ACTIONS ========== */
 .right {
     display: flex;
     align-items: center;
+    gap: 10px;
 }
 
 .right a {
-    text-decoration: none; /* remove underline/underscore */
+    text-decoration: none;
     color: inherit;
 }
 
 .right i {
-    margin-left: 15px;
     cursor: pointer;
     color: #555;
     transition: 0.2s;
@@ -218,12 +259,6 @@ body {
 
 .starred {
     color: gold !important;
-}
-
-.completed-title {
-    margin: 25px 0 10px;
-    font-size: 1.2rem;
-    color: #555;
 }
 
 /* Completed task card */
@@ -243,7 +278,7 @@ footer {
 
 /* ========== MODAL STYLING ========== */
 .modal {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -302,4 +337,22 @@ footer {
 .modal-content form button.btn-primary {
     width: 100%;
     justify-content: center;
+}
+
+/* Optional small due date box */
+.due-date-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #f3f3f3;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #444;
+    margin: 0 15px;
+}
+
+.due-date-box i {
+    color: #ff8c42; /* Orange clock icon */
 }
