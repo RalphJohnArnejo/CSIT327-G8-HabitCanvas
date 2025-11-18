@@ -51,7 +51,7 @@
         background:none;
         border:none;
         font-size:0.95rem;
-        color:#555;
+        color: #000;
         text-decoration:none;
         display:flex;
         gap:8px;
@@ -403,12 +403,13 @@ function loadSettingsFromStorage(){
     try {
         const parsed = JSON.parse(raw);
         return {
-            focus: parsed.focus || DEFAULTS.focus,
-            short: parsed.short || DEFAULTS.short,
-            long: parsed.long || DEFAULTS.long,
-            sound: typeof parsed.sound === 'boolean' ? parsed.sound : DEFAULTS.sound,
-            notifications: typeof parsed.notifications === 'boolean' ? parsed.notifications : DEFAULTS.notifications
-        };
+        focus: Number.isFinite(parsed.focus) ? parsed.focus : parseInt(parsed.focus) || DEFAULTS.focus,
+        short: Number.isFinite(parsed.short) ? parsed.short : parseInt(parsed.short) || DEFAULTS.short,
+        long: Number.isFinite(parsed.long) ? parsed.long : parseInt(parsed.long) || DEFAULTS.long,
+        sound: typeof parsed.sound === 'boolean' ? parsed.sound : DEFAULTS.sound,
+        notifications: typeof parsed.notifications === 'boolean' ? parsed.notifications : DEFAULTS.notifications
+    };
+
     } catch(e){
         return {...DEFAULTS};
     }
@@ -862,43 +863,68 @@ resetDefaultBtn.addEventListener('click', ()=>{
 });
 
 // save settings
-saveSettingsBtn.addEventListener('click', ()=>{
-    // read UI controls
+saveSettingsBtn.addEventListener('click', ()=> {
+    // read UI controls (force numeric values)
     const newSettings = {
-        focus: Math.max(1, Math.min(60, parseInt(focusRange.value||DEFAULTS.focus))),
-        short: Math.max(1, Math.min(60, parseInt(shortRange.value||DEFAULTS.short))),
-        long: Math.max(1, Math.min(60, parseInt(longRange.value||DEFAULTS.long))),
+        focus: Math.max(1, Math.min(60, parseInt(focusRange.value || DEFAULTS.focus, 10))),
+        short: Math.max(1, Math.min(60, parseInt(shortRange.value || DEFAULTS.short, 10))),
+        long:  Math.max(1, Math.min(60, parseInt(longRange.value || DEFAULTS.long, 10))),
         sound: soundToggle.classList.contains('on'),
         notifications: notifToggle.classList.contains('on')
     };
 
-    // if enabling notifications, ensure permission
-    if(newSettings.notifications && Notification && Notification.permission !== 'granted'){
-        // ask permission
-        requestNotificationPermission().then(granted=>{
-            if(!granted){
+    // helper to apply saved settings to runtime and UI
+    function applyNewSettingsAndRefreshUI() {
+        settings = newSettings;
+        saveSettingsToStorage(settings);
+
+        // refresh durations object used by timer logic
+        durations = durationsFromSettings();
+
+        // If timer is NOT running, update the visible timer immediately to the new duration
+        if (!isRunning) {
+            timeLeftSeconds = durations[currentMode] * 60;
+        } else {
+            // If timer is running, we recompute endTime so remaining reflects current timeLeftSeconds (optional)
+            // Keep current behavior: don't forcibly reset running timer. If you want running timer to adjust:
+            // endTime = Date.now() + timeLeftSeconds * 1000;
+        }
+
+        // update controls and displayed timer
+        applySettingsToControls();
+        updateTimerDisplay();
+
+        // persist state and settings
+        saveStateToStorage();
+    }
+
+    // If enabling notifications, ensure permission (existing logic, but using our helper)
+    if (newSettings.notifications && "Notification" in window && Notification.permission !== 'granted') {
+        requestNotificationPermission().then(granted => {
+            if (!granted) {
                 newSettings.notifications = false;
                 notifToggle.classList.remove('on');
                 alert('Notifications permission denied — disabled notifications in settings.');
             }
-            settings = newSettings;
-            saveSettingsToStorage(settings);
-            durations = durationsFromSettings();
-            // apply changes to UI: we do NOT forcibly reset running timer; new durations apply next time user switches/reset
-            applySettingsToControls();
+            applyNewSettingsAndRefreshUI();
             closeSettingsModal();
-            // persist state to storage
-            saveStateToStorage();
+        }).catch(() => {
+            // In case request fails, still apply settings without notifications
+            newSettings.notifications = false;
+            notifToggle.classList.remove('on');
+            applyNewSettingsAndRefreshUI();
+            closeSettingsModal();
         });
     } else {
-        settings = newSettings;
-        saveSettingsToStorage(settings);
-        durations = durationsFromSettings();
-        applySettingsToControls();
+        applyNewSettingsAndRefreshUI();
         closeSettingsModal();
-        saveStateToStorage();
     }
 });
+
+
+
+
+
 
 /* close modal when clicking on overlay outside box */
 settingsModal.addEventListener('click', (e)=> { if(e.target === settingsModal) closeSettingsModal(); });
