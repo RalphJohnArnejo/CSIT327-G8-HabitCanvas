@@ -18,9 +18,12 @@
         <span class="logo-text">HabitCanvas</span>
     </div>
     <div class="nav-center">
-        <a class="nav-btn active"><i class="fa fa-list"></i> Tasks</a>
-        <a class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
-        <a class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
+        <a href="#" class="nav-btn active"><i class="fa fa-list"></i> Tasks</a>
+
+        <!-- Timer now goes to a separate page -->
+        <a href="/timer" class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
+
+        <a href="#" class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
     </div>
     <div class="right">
         <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
@@ -46,14 +49,12 @@
                 <option value="default" {% if request.GET.sort == 'default' or not request.GET.sort %}selected{% endif %}>Default</option>
                 <option value="priority" {% if request.GET.sort == 'priority' %}selected{% endif %}>Priority</option>
             </select>
-
             <select name="category" onchange="this.form.submit()">
                 <option value="" {% if not request.GET.category %}selected{% endif %}>All Categories</option>
                 <option value="School" {% if request.GET.category == 'School' %}selected{% endif %}>School</option>
                 <option value="Personal" {% if request.GET.category == 'Personal' %}selected{% endif %}>Personal</option>
                 <option value="Work" {% if request.GET.category == 'Work' %}selected{% endif %}>Work</option>
             </select>
-
             <select name="difficulty" onchange="this.form.submit()">
                 <option value="" {% if not request.GET.difficulty %}selected{% endif %}>All Difficulty</option>
                 <option value="Easy" {% if request.GET.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
@@ -93,26 +94,31 @@
             {% csrf_token %}
             <label for="title">Task Title</label>
             <input type="text" name="title" id="title" required>
+
             <label for="category">Category</label>
             <select name="category" id="category" required>
                 <option value="School">School</option>
                 <option value="Personal">Personal</option>
                 <option value="Work">Work</option>
             </select>
+
             <label for="difficulty">Difficulty</label>
             <select name="difficulty" id="difficulty" required>
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
             </select>
+
             <label for="due_date">Due Date</label>
             <input type="date" name="due_date" id="due_date">
+
             <label for="priority">Priority</label>
             <select name="priority" id="priority">
                 <option value="0">Low</option>
                 <option value="1">Medium</option>
                 <option value="2">High</option>
             </select>
+
             <button type="submit" class="btn-primary">Add Task</button>
         </form>
     </div>
@@ -123,29 +129,35 @@
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Edit Task</h2>
+
         <form id="editTaskForm" method="POST">{% csrf_token %}
             <label for="edit_title">Task Title</label>
             <input type="text" name="title" id="edit_title" required>
+
             <label for="edit_category">Category</label>
             <select name="category" id="edit_category" required>
                 <option value="School">School</option>
                 <option value="Personal">Personal</option>
                 <option value="Work">Work</option>
             </select>
+
             <label for="edit_difficulty">Difficulty</label>
             <select name="difficulty" id="edit_difficulty" required>
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
             </select>
+
             <label for="edit_due_date">Due Date</label>
             <input type="date" name="due_date" id="edit_due_date">
+
             <label for="edit_priority">Priority</label>
             <select name="priority" id="edit_priority">
                 <option value="0">Low</option>
                 <option value="1">Medium</option>
                 <option value="2">High</option>
             </select>
+
             <button type="submit" class="btn-primary">Save Changes</button>
         </form>
     </div>
@@ -368,7 +380,6 @@ function attachTaskEvents(){
 // Attach events initially
 attachTaskEvents();
 </script>
-
 
 </body>
 </html>

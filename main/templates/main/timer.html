@@ -1,0 +1,1000 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HabitCanvas | Timer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    /* ===== reset-ish / page basics ===== */
+    :root{
+        --blue:#1f6feb;
+        --muted:#f3f4f6;
+        --card-shadow: 0 4px 10px rgba(0,0,0,0.07);
+    }
+    *{box-sizing:border-box}
+    body{
+        margin:0;
+        font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        background:#f5f6fa;
+        color:#222;
+    }
+
+    /* ===== top nav (same look as dashboard) ===== */
+    .top-nav{
+        background:#fff;
+        padding:15px 40px;
+        border-bottom:1px solid #ddd;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        position:sticky;
+        top:0;
+        z-index:50;
+    }
+    .top-nav .left, .top-nav .right{ display:flex; align-items:center; gap:10px; }
+    .logo-img{ height:35px; width:35px; border-radius:6px; object-fit:cover; }
+    .logo-text{ font-size:1.3rem; font-weight:600; margin-left:6px; }
+    .nav-center{
+        position:absolute;
+        left:50%;
+        transform:translateX(-50%);
+        display:flex;
+        gap:15px;
+        align-items:center;
+    }
+    .nav-btn{
+        padding:10px 18px;
+        border-radius:10px;
+        background:none;
+        border:none;
+        font-size:0.95rem;
+        color: #000;
+        text-decoration:none;
+        display:flex;
+        gap:8px;
+        align-items:center;
+        cursor:pointer;
+    }
+    .nav-btn.active{ background:#e8f0ff; color:var(--blue); font-weight:600; }
+    .btn-logout{
+        background:#e0e7ff;
+        padding:8px 16px;
+        border-radius:8px;
+        color:var(--blue);
+        text-decoration:none;
+        font-weight:600;
+    }
+
+    /* ===== main box ===== */
+    .main-box{
+        width:780px;
+        max-width:calc(100% - 48px);
+        margin:40px auto;
+        padding:30px 40px;
+        background:#fff;
+        border-radius:15px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .title-area{ display:flex; justify-content:space-between; align-items:center; gap:20px; }
+    h2{ margin:0; font-size:28px; font-weight:700; }
+    .subtitle{ color:#666; margin-top:6px; font-size:0.95rem; }
+
+    .top-buttons{ display:flex; gap:12px; }
+    .top-btn{
+        border:1px solid #cfcfcf;
+        padding:8px 14px;
+        border-radius:10px;
+        background:#fff;
+        cursor:pointer;
+        font-weight:600;
+        display:flex;
+        gap:8px;
+        align-items:center;
+    }
+
+    /* modes */
+    .mode-buttons{ margin-top:25px; display:flex; justify-content:center; gap:15px; }
+    .mode-btn{
+        padding:12px 28px;
+        border-radius:10px;
+        border:1px solid #cfd4dc;
+        background:#fff;
+        font-weight:600;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    .mode-btn.active-mode{ background:var(--blue); color:#fff; border-color:var(--blue); }
+
+    /* timer circle */
+    .timer-wrapper{ display:flex; justify-content:center; margin:30px 0; }
+    .timer-circle{
+        width:260px; height:260px;
+        border-radius:50%;
+        border:6px solid var(--blue);
+        display:flex; align-items:center; justify-content:center;
+        font-size:52px; font-weight:700; color:var(--blue);
+        background:#f9fbff;
+        position:relative;
+        transition:transform .25s ease;
+        box-shadow: 0 6px 20px rgba(31,111,235,0.05) inset;
+    }
+    /* running animation */
+    .timer-circle.running{
+        animation: pulse 1.8s infinite;
+        transform:scale(1.01);
+    }
+    @keyframes pulse {
+        0%{ box-shadow: 0 0 0 0 rgba(31,111,235,0.12) inset; }
+        50%{ box-shadow: 0 0 0 18px rgba(31,111,235,0.03) inset; }
+        100%{ box-shadow: 0 0 0 0 rgba(31,111,235,0.00) inset; }
+    }
+
+    /* small inner label (to match screenshot) */
+    .timer-inner {
+        background: rgba(0,0,0,0.04);
+        padding: 10px 22px;
+        border-radius:10px;
+        color:#222;
+        font-weight:700;
+        font-size:36px;
+    }
+
+    /* controls */
+    .controls{ display:flex; justify-content:center; gap:15px; margin-bottom:6px; }
+    .ctrl-btn{ padding:12px 24px; border-radius:10px; font-weight:600; border:none; cursor:pointer; }
+    .start{ background:var(--blue); color:#fff }
+    .pause{ background:#d2d2d2 }
+    .stop{ background:#ff4b4b; color:#fff }
+    .reset{ background:#efefef }
+
+    /* ===== SETTINGS MODAL (styled like your preferred modal) ===== */
+    .settings-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); z-index:2000; }
+    .settings-box{
+        width:560px; max-width:calc(100% - 48px);
+        background:#fff; border-radius:12px; padding:22px 26px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.12);
+        animation:pop .12s ease;
+    }
+    @keyframes pop{ from{transform:translateY(-6px);opacity:0} to{transform:none;opacity:1} }
+
+    .settings-header{ display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:8px; }
+    .settings-header h3{ margin:0; font-size:18px; font-weight:700; }
+    .settings-close{ position:absolute; right:0; top:-6px; background:none; border:none; font-size:22px; cursor:pointer; color:#666; }
+    .settings-body{ margin-top:12px; }
+
+    .setting-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .setting-row .label{ min-width:170px; font-weight:600; color:#333; }
+    .slider-wrap{ flex:1; display:flex; align-items:center; gap:12px; }
+    .slider-wrap input[type="range"]{ -webkit-appearance:none; width:100%; height:8px; background:#e9eef9; border-radius:8px; outline:none; }
+    .slider-wrap input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--blue); box-shadow:0 2px 6px rgba(31,111,235,0.28); border:3px solid rgba(255,255,255,0.6); cursor:pointer; }
+    .slider-value{ min-width:64px; text-align:right; font-weight:700; color:var(--blue); }
+
+    .option-row{ display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+    .option-row label{ display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; }
+    .toggle{ width:42px; height:26px; background:#e9eef9; border-radius:14px; position:relative; transition:.15s; }
+    .toggle .dot{ position:absolute; top:3px; left:3px; width:20px; height:20px; background:#fff; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.08); transition:.15s; }
+    .toggle.on{ background:var(--blue); }
+    .toggle.on .dot{ left:calc(100% - 23px); }
+
+    .reset-default{ width:100%; padding:10px 12px; border-radius:10px; background:#f6f8ff; border:1px solid #e6eeff; color:#333; font-weight:700; cursor:pointer; margin-top:6px; margin-bottom:14px; }
+
+    .settings-footer{ display:flex; justify-content:flex-end; gap:10px; }
+    .btn-cancel{ padding:8px 14px; border-radius:8px; background:#f3f4f6; border:none; cursor:pointer; font-weight:600; }
+    .btn-save{ padding:8px 14px; border-radius:8px; background:var(--blue); color:#fff; border:none; cursor:pointer; font-weight:600; }
+
+    /* ===== STATS MODAL ===== */
+    .stats-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); z-index:2000; }
+    .stats-box{
+        width:560px; max-width:calc(100% - 48px);
+        background:#fff; border-radius:12px; padding:22px 26px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.12);
+    }
+    .stats-header{ display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:14px; }
+    .stats-header h3{ margin:0; font-size:18px; font-weight:700; }
+    .stats-close{ position:absolute; right:0; top:-6px; background:none; border:none; font-size:22px; cursor:pointer; color:#666; }
+
+    .stats-cards{ display:flex; gap:14px; flex-direction:column; }
+    .stat-card{
+        border-radius:10px; padding:18px; min-height:88px;
+        display:flex; flex-direction:column; justify-content:center;
+    }
+    .stat-card.blue{ background:linear-gradient(180deg, #eaf3ff, #f6fbff); border:1px solid #e0efff; color:#055; }
+    .stat-card.green{ background:linear-gradient(180deg, #e9fbf0, #f6fff7); border:1px solid #dfeee0; color:#055; }
+    .stat-small{ font-size:13px; color:#2a6; opacity:.85; margin-bottom:6px; font-weight:700}
+    .stat-big{ font-size:22px; font-weight:800; margin-bottom:4px; color:#123; }
+    .stat-extra{ font-size:13px; color:#556; }
+
+    /* responsive */
+    @media(max-width:720px){
+        .main-box{ padding:22px; margin:20px; }
+        .nav-center{ position:static; transform:none; }
+    }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<header class="top-nav">
+    <div class="left">
+        <img src="{% static 'habitcanvass.jpg' %}" class="logo-img" alt="logo">
+        <span class="logo-text">HabitCanvas</span>
+    </div>
+
+    <div class="nav-center">
+        <a href="/dashboard" class="nav-btn"><i class="fa fa-list"></i> Tasks</a>
+        <a href="/timer" class="nav-btn active"><i class="fa fa-stopwatch"></i> Timer</a>
+        <a href="#" class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
+    </div>
+
+    <div class="right">
+        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+    </div>
+</header>
+
+<!-- MAIN BOX -->
+<div class="main-box" role="main" aria-labelledby="timerTitle">
+    <div class="title-area">
+        <div>
+            <h2 id="timerTitle">Focus Timer</h2>
+            <p class="subtitle">Use the Pomodoro technique to stay focused</p>
+        </div>
+
+        <div class="top-buttons">
+            <button id="openStats" class="top-btn"><i class="fa fa-chart-line"></i> Stats</button>
+            <button id="openSettings" class="top-btn"><i class="fa fa-gear"></i> Settings</button>
+        </div>
+    </div>
+
+    <div class="mode-buttons" role="tablist" aria-label="timer modes">
+        <button id="focusMode" class="mode-btn active-mode" role="tab" aria-selected="true"><i class="fa fa-leaf"></i> Focus</button>
+        <button id="shortMode" class="mode-btn" role="tab" aria-selected="false"><i class="fa fa-mug-hot"></i> Short Break</button>
+        <button id="longMode" class="mode-btn" role="tab" aria-selected="false"><i class="fa fa-bed"></i> Long Break</button>
+    </div>
+
+    <div class="timer-wrapper" aria-hidden="false">
+        <div class="timer-circle" id="timerCircle" aria-live="polite">
+            <div class="timer-inner" id="timer">25:00</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="startBtn" class="ctrl-btn start"><i class="fa fa-play"></i> Start</button>
+        <button id="pauseBtn" class="ctrl-btn pause"><i class="fa fa-pause"></i> Pause</button>
+        <button id="stopBtn" class="ctrl-btn stop"><i class="fa fa-stop"></i> Stop</button>
+        <button id="resetBtn" class="ctrl-btn reset"><i class="fa fa-rotate-left"></i> Reset</button>
+    </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" class="settings-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="settings-box" role="document">
+        <div class="settings-header">
+            <h3>Timer Settings</h3>
+            <button id="closeSettings" class="settings-close" title="Close">×</button>
+        </div>
+
+        <div class="settings-body">
+            <div class="setting-row">
+                <div class="label">Focus Duration</div>
+                <div class="slider-wrap">
+                    <input id="focusRange" type="range" min="1" max="60" step="1" value="25">
+                    <div class="slider-value" id="focusVal">25 min</div>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="label">Short Break</div>
+                <div class="slider-wrap">
+                    <input id="shortRange" type="range" min="1" max="60" step="1" value="5">
+                    <div class="slider-value" id="shortVal">5 min</div>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <div class="label">Long Break</div>
+                <div class="slider-wrap">
+                    <input id="longRange" type="range" min="1" max="60" step="1" value="15">
+                    <div class="slider-value" id="longVal">15 min</div>
+                </div>
+            </div>
+
+            <div style="margin:8px 0 10px 0"></div>
+
+            <div class="option-row">
+                <label>
+                    <div class="toggle" id="soundToggle"><div class="dot"></div></div>
+                    <span>Ticking & End Sound</span>
+                </label>
+
+                <label style="margin-left:auto">
+                    <div class="toggle" id="notifToggle"><div class="dot"></div></div>
+                    <span>Desktop Notifications</span>
+                </label>
+            </div>
+
+            <button id="resetDefault" class="reset-default">Reset to defaults</button>
+
+            <div class="settings-footer">
+                <button id="cancelSettings" class="btn-cancel">Cancel</button>
+                <button id="saveSettings" class="btn-save">Save Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STATS MODAL -->
+<div id="statsModal" class="stats-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="stats-box" role="document">
+        <div class="stats-header">
+            <h3>Stats</h3>
+            <button id="closeStats" class="stats-close" title="Close">×</button>
+        </div>
+
+        <div class="stats-cards">
+            <div class="stat-card blue">
+                <div class="stat-small">Today's Focus Time</div>
+                <div class="stat-big" id="todayMinutes">0 min</div>
+                <div class="stat-extra" id="todaySessions">0 sessions completed</div>
+            </div>
+
+            <div class="stat-card green">
+                <div class="stat-small">This Week</div>
+                <div class="stat-big" id="weekMinutes">0 min</div>
+                <div class="stat-extra" id="weekSessions">0 sessions completed</div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+                <button id="clearStats" class="top-btn" title="Clear stats">Reset Stats</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===== Helper utilities ===== */
+const $ = id => document.getElementById(id);
+
+function formatTime(seconds){
+    const m = Math.floor(seconds/60);
+    const s = seconds % 60;
+    return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function todayKey(){
+    const d = new Date();
+    return d.toISOString().slice(0,10); // YYYY-MM-DD
+}
+
+function weekKeys(){
+    // returns array of last 7 day keys (including today)
+    const keys = [];
+    const now = new Date();
+    for(let i=0;i<7;i++){
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        keys.push(d.toISOString().slice(0,10));
+    }
+    return keys;
+}
+
+/* ===== Persisted data keys ===== */
+const STORAGE = {
+    SETTINGS: 'habit_timer_settings_v1',
+    STATE: 'habit_timer_state_v1',
+    STATS: 'habit_timer_stats_v1'
+};
+
+/* ===== Default values ===== */
+const DEFAULTS = {
+    focus:25, short:5, long:15,
+    sound:true,
+    notifications:false
+};
+
+/* ===== Load / Save Settings ===== */
+function loadSettingsFromStorage(){
+    const raw = localStorage.getItem(STORAGE.SETTINGS);
+    if(!raw) return {...DEFAULTS};
+    try {
+        const parsed = JSON.parse(raw);
+        return {
+        focus: Number.isFinite(parsed.focus) ? parsed.focus : parseInt(parsed.focus) || DEFAULTS.focus,
+        short: Number.isFinite(parsed.short) ? parsed.short : parseInt(parsed.short) || DEFAULTS.short,
+        long: Number.isFinite(parsed.long) ? parsed.long : parseInt(parsed.long) || DEFAULTS.long,
+        sound: typeof parsed.sound === 'boolean' ? parsed.sound : DEFAULTS.sound,
+        notifications: typeof parsed.notifications === 'boolean' ? parsed.notifications : DEFAULTS.notifications
+    };
+
+    } catch(e){
+        return {...DEFAULTS};
+    }
+}
+
+function saveSettingsToStorage(settings){
+    localStorage.setItem(STORAGE.SETTINGS, JSON.stringify(settings));
+}
+
+/* ===== Stats storage =====
+   stats structure:
+   {
+     'YYYY-MM-DD': { minutes: N, sessions: M },
+     ...
+   }
+*/
+function loadStats(){
+    const raw = localStorage.getItem(STORAGE.STATS);
+    if(!raw) return {};
+    try { return JSON.parse(raw)||{} } catch(e){ return {} }
+}
+function saveStats(stats){
+    localStorage.setItem(STORAGE.STATS, JSON.stringify(stats));
+}
+
+/* ===== State storage (timer running / last mode / timeLeft or endTime) =====
+   state example:
+   {
+     currentMode: 'focus'|'short'|'long',
+     isRunning: true|false,
+     endTime: 169...  (ms since epoch)  OR timeLeftSeconds: 1500
+   }
+*/
+function loadState(){ try { return JSON.parse(localStorage.getItem(STORAGE.STATE))||{} } catch(e){ return {} } }
+function saveState(state){ localStorage.setItem(STORAGE.STATE, JSON.stringify(state)); }
+
+/* ===== WebAudio sounds (tick + end) ===== */
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function playTickSound(){
+    const s = settings.sound;
+    if(!s) return;
+    if(!AudioContext) return;
+    if(!audioCtx) audioCtx = new AudioContext();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'square';
+    o.frequency.value = 900;
+    g.gain.value = 0.000001; // nearly silent initially
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    g.gain.setValueAtTime(0.00001, now);
+    g.gain.exponentialRampToValueAtTime(0.02, now + 0.001);
+    o.start(now);
+    g.gain.exponentialRampToValueAtTime(0.00001, now + 0.06);
+    o.stop(now + 0.07);
+}
+
+function playEndSound(){
+    const s = settings.sound;
+    if(!s) return;
+    if(!AudioContext) return;
+    if(!audioCtx) audioCtx = new AudioContext();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = 520;
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    g.gain.setValueAtTime(0.00001, now);
+    g.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+    o.start(now);
+    o.frequency.exponentialRampToValueAtTime(220, now + 0.25);
+    g.gain.exponentialRampToValueAtTime(0.00001, now + 0.6);
+    o.stop(now + 0.65);
+}
+
+/* ===== Notifications helper ===== */
+async function requestNotificationPermission(){
+    if(!("Notification" in window)) return false;
+    const perm = await Notification.requestPermission();
+    return perm === 'granted';
+}
+function sendNotification(title, body){
+    if(!settings.notifications) return;
+    if(!("Notification" in window)) return;
+    if(Notification.permission !== 'granted') return;
+    try {
+        new Notification(title, { body, icon: '' });
+    } catch(e){}
+}
+
+/* ===== Application state variables ===== */
+let settings = loadSettingsFromStorage();
+let stats = loadStats();
+let state = loadState();
+
+// DOM elements
+const focusRange = $('focusRange');
+const shortRange = $('shortRange');
+const longRange = $('longRange');
+const focusVal = $('focusVal');
+const shortVal = $('shortVal');
+const longVal = $('longVal');
+
+const soundToggle = $('soundToggle');
+const notifToggle = $('notifToggle');
+const resetDefaultBtn = $('resetDefault');
+
+const settingsModal = $('settingsModal');
+const openSettingsBtn = $('openSettings');
+const closeSettingsBtn = $('closeSettings');
+const cancelSettingsBtn = $('cancelSettings');
+const saveSettingsBtn = $('saveSettings');
+
+const statsModal = $('statsModal');
+const openStatsBtn = $('openStats');
+const closeStatsBtn = $('closeStats');
+const clearStatsBtn = $('clearStats');
+
+const timerEl = $('timer');
+const timerCircle = $('timerCircle');
+
+const startBtn = $('startBtn');
+const pauseBtn = $('pauseBtn');
+const stopBtn = $('stopBtn');
+const resetBtn = $('resetBtn');
+
+const focusModeBtn = $('focusMode');
+const shortModeBtn = $('shortMode');
+const longModeBtn = $('longMode');
+
+const todayMinutesEl = $('todayMinutes');
+const todaySessionsEl = $('todaySessions');
+const weekMinutesEl = $('weekMinutes');
+const weekSessionsEl = $('weekSessions');
+
+/* ===== Setup UI from settings ===== */
+function applySettingsToControls(){
+    focusRange.value = settings.focus;
+    shortRange.value = settings.short;
+    longRange.value = settings.long;
+    focusVal.textContent = `${settings.focus} min`;
+    shortVal.textContent = `${settings.short} min`;
+    longVal.textContent = `${settings.long} min`;
+
+    // toggles
+    if(settings.sound) soundToggle.classList.add('on'); else soundToggle.classList.remove('on');
+    if(settings.notifications) notifToggle.classList.add('on'); else notifToggle.classList.remove('on');
+}
+applySettingsToControls();
+
+/* ===== Stats UI refresh ===== */
+function refreshStatsUI(){
+    const key = todayKey();
+    const today = stats[key] || {minutes:0, sessions:0};
+    todayMinutesEl.textContent = `${today.minutes} min`;
+    todaySessionsEl.textContent = `${today.sessions} sessions completed`;
+
+    const weekKeysArr = weekKeys();
+    let wkMinutes = 0, wkSessions = 0;
+    for(const k of weekKeysArr){
+        const s = stats[k];
+        if(s){ wkMinutes += (s.minutes||0); wkSessions += (s.sessions||0); }
+    }
+    weekMinutesEl.textContent = `${wkMinutes} min`;
+    weekSessionsEl.textContent = `${wkSessions} sessions completed`;
+}
+refreshStatsUI();
+
+/* ===== Timer logic (with persistence across refresh) ===== */
+let timerInterval = null;
+let currentMode = state.currentMode || 'focus'; // focus|short|long
+let isRunning = !!state.isRunning;
+let endTime = state.endTime || null; // ms epoch when timer will end
+let timeLeftSeconds = state.timeLeftSeconds || (settings.focus * 60); // fallback
+
+// initialize durations from settings object
+function durationsFromSettings(){
+    return { focus: settings.focus, short: settings.short, long: settings.long };
+}
+let durations = durationsFromSettings();
+
+// When the page loads, if there's a running endTime in storage, compute timeLeftSeconds accordingly.
+function restoreStateOnLoad(){
+    // update durations from settings (in case saved)
+    durations = durationsFromSettings();
+
+    if(state && state.isRunning && state.endTime){
+        const remainingMs = Number(state.endTime) - Date.now();
+        if(remainingMs <= 0){
+            // Timer already finished while user was away, treat as finished
+            timeLeftSeconds = 0;
+            isRunning = false;
+            endTime = null;
+            state = {};
+            saveStateToStorage();
+            onTimerFinish();
+        } else {
+            timeLeftSeconds = Math.ceil(remainingMs / 1000);
+            startInterval(true); // resume and don't re-save endTime here (already set)
+        }
+    } else {
+        // not running — restore last mode and either timeLeft or default
+        if(state && state.currentMode){
+            currentMode = state.currentMode;
+        }
+        // If there was a paused timeLeft saved, pick that. Otherwise set default for mode
+        if(state && typeof state.timeLeftSeconds === 'number'){
+            timeLeftSeconds = state.timeLeftSeconds;
+        } else {
+            timeLeftSeconds = durations[currentMode]*60;
+        }
+    }
+    applyModeUI();
+    updateTimerDisplay();
+}
+restoreStateOnLoad();
+
+function saveStateToStorage(){
+    const st = {
+        currentMode,
+        isRunning,
+    };
+    if(isRunning && endTime) st.endTime = endTime;
+    else st.timeLeftSeconds = timeLeftSeconds;
+    saveState(st);
+}
+
+/* update UI for active mode buttons */
+function applyModeUI(){
+    focusModeBtn.classList.toggle('active-mode', currentMode === 'focus');
+    shortModeBtn.classList.toggle('active-mode', currentMode === 'short');
+    longModeBtn.classList.toggle('active-mode', currentMode === 'long');
+    focusModeBtn.setAttribute('aria-selected', currentMode === 'focus');
+    shortModeBtn.setAttribute('aria-selected', currentMode === 'short');
+    longModeBtn.setAttribute('aria-selected', currentMode === 'long');
+}
+
+/* update timer inner text */
+function updateTimerDisplay(){
+    timerEl.textContent = formatTime(timeLeftSeconds);
+}
+
+/* start timer interval
+   resumeFromStorage flag used to indicate restore from saved endTime (so we avoid re-saving endTime incorrectly)
+*/
+function startInterval(resumeFromStorage=false){
+    if(timerInterval) return; // already running
+    isRunning = true;
+    timerCircle.classList.add('running');
+
+    // if not resuming (i.e. user hits Start), compute endTime and persist
+    if(!resumeFromStorage){
+        endTime = Date.now() + timeLeftSeconds * 1000;
+        saveStateToStorage();
+    } else {
+        // resumeFromStorage: endTime already set from storage
+        endTime = state.endTime;
+    }
+
+    // tick every second
+    timerInterval = setInterval(()=>{
+        const remaining = Math.ceil((endTime - Date.now()) / 1000);
+        if(remaining <= 0){
+            // finished
+            timeLeftSeconds = 0;
+            updateTimerDisplay();
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            timerCircle.classList.remove('running');
+            // clear saved running state in storage
+            state = { currentMode, isRunning:false, timeLeftSeconds:0 };
+            saveStateToStorage();
+            onTimerFinish();
+        } else {
+            timeLeftSeconds = remaining;
+            updateTimerDisplay();
+            // tick sound (every second)
+            if(settings.sound) playTickSound();
+        }
+    }, 1000);
+
+    // save state
+    saveStateToStorage();
+}
+
+/* stop/pause/stop timer */
+function pauseTimer(){
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    timerCircle.classList.remove('running');
+    // compute current timeLeftSeconds from endTime if present
+    if(endTime){
+        const remaining = Math.ceil((endTime - Date.now()) / 1000);
+        timeLeftSeconds = Math.max(0, remaining);
+    }
+    endTime = null;
+    saveStateToStorage();
+}
+
+function stopTimerAndReset(){
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    timerCircle.classList.remove('running');
+    timeLeftSeconds = durations[currentMode]*60;
+    endTime = null;
+    saveStateToStorage();
+    updateTimerDisplay();
+}
+
+function resetTimerToModeDefault(){
+    timeLeftSeconds = durations[currentMode]*60;
+    endTime = null;
+    if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+    isRunning = false;
+    timerCircle.classList.remove('running');
+    saveStateToStorage();
+    updateTimerDisplay();
+}
+
+/* when timer finishes */
+function onTimerFinish(){
+    // visual / sound / notification
+    playEndSound();
+    sendNotification("Pomodoro finished", (currentMode === 'focus') ? "Focus session completed." : "Break finished.");
+
+    // Update stats ONLY if the finished session was a Focus session
+    if(currentMode === 'focus'){
+        const key = todayKey();
+        stats[key] = stats[key] || { minutes:0, sessions:0 };
+        const minutesToAdd = settings.focus; // record the configured focus minutes
+        stats[key].minutes = (stats[key].minutes || 0) + minutesToAdd;
+        stats[key].sessions = (stats[key].sessions || 0) + 1;
+        saveStats(stats);
+        refreshStatsUI();
+    }
+
+    // auto-switch: if finished focus -> go to short break (common UX) else back to focus
+    if(currentMode === 'focus'){
+        currentMode = 'short';
+    } else {
+        currentMode = 'focus';
+    }
+    // set timeLeft to new mode default
+    durations = durationsFromSettings();
+    timeLeftSeconds = durations[currentMode]*60;
+    updateTimerDisplay();
+    applyModeUI();
+    // Save state (not running)
+    saveStateToStorage();
+}
+
+/* ===== UI actions wiring ===== */
+startBtn.addEventListener('click', ()=>{
+    // if already running, ignore
+    if(isRunning) return;
+    // if paused, compute endTime from timeLeftSeconds
+    endTime = Date.now() + timeLeftSeconds*1000;
+    startInterval(false);
+});
+
+pauseBtn.addEventListener('click', ()=>{
+    pauseTimer();
+});
+
+stopBtn.addEventListener('click', ()=>{
+    stopTimerAndReset();
+});
+
+resetBtn.addEventListener('click', ()=>{
+    resetTimerToModeDefault();
+});
+
+/* mode buttons */
+focusModeBtn.addEventListener('click', ()=>{
+    currentMode = 'focus';
+    durations = durationsFromSettings();
+    timeLeftSeconds = durations.focus*60;
+    applyModeUI();
+    updateTimerDisplay();
+    saveStateToStorage();
+});
+shortModeBtn.addEventListener('click', ()=>{
+    currentMode = 'short';
+    durations = durationsFromSettings();
+    timeLeftSeconds = durations.short*60;
+    applyModeUI();
+    updateTimerDisplay();
+    saveStateToStorage();
+});
+longModeBtn.addEventListener('click', ()=>{
+    currentMode = 'long';
+    durations = durationsFromSettings();
+    timeLeftSeconds = durations.long*60;
+    applyModeUI();
+    updateTimerDisplay();
+    saveStateToStorage();
+});
+
+/* ===== Settings modal behaviour ===== */
+openSettingsBtn.addEventListener('click', ()=>{
+    // populate settings controls from current settings
+    applySettingsToControls();
+    settingsModal.style.display = 'flex';
+    settingsModal.setAttribute('aria-hidden', 'false');
+});
+function closeSettingsModal(){
+    // restore controls reflect current saved settings (cancel restores)
+    applySettingsToControls();
+    settingsModal.style.display = 'none';
+    settingsModal.setAttribute('aria-hidden','true');
+}
+closeSettingsBtn.addEventListener('click', closeSettingsModal);
+cancelSettingsBtn.addEventListener('click', closeSettingsModal);
+
+// slider live labels
+focusRange.addEventListener('input', ()=> focusVal.textContent = `${focusRange.value} min`);
+shortRange.addEventListener('input', ()=> shortVal.textContent = `${shortRange.value} min`);
+longRange.addEventListener('input', ()=> longVal.textContent = `${longRange.value} min`);
+
+// toggle small helpers
+soundToggle.addEventListener('click', ()=>{
+    soundToggle.classList.toggle('on');
+});
+notifToggle.addEventListener('click', async ()=>{
+    // if enabling notifications and permission not granted, request
+    const willEnable = !notifToggle.classList.contains('on');
+    if(willEnable){
+        const granted = await requestNotificationPermission();
+        if(!granted){
+            // keep it off
+            notifToggle.classList.remove('on');
+            alert('Desktop notification permission was not granted.');
+            return;
+        }
+    }
+    notifToggle.classList.toggle('on');
+});
+
+// reset defaults
+resetDefaultBtn.addEventListener('click', ()=>{
+    settings = {...DEFAULTS};
+    applySettingsToControls();
+});
+
+// save settings
+saveSettingsBtn.addEventListener('click', ()=> {
+    // read UI controls (force numeric values)
+    const newSettings = {
+        focus: Math.max(1, Math.min(60, parseInt(focusRange.value || DEFAULTS.focus, 10))),
+        short: Math.max(1, Math.min(60, parseInt(shortRange.value || DEFAULTS.short, 10))),
+        long:  Math.max(1, Math.min(60, parseInt(longRange.value || DEFAULTS.long, 10))),
+        sound: soundToggle.classList.contains('on'),
+        notifications: notifToggle.classList.contains('on')
+    };
+
+    // helper to apply saved settings to runtime and UI
+    function applyNewSettingsAndRefreshUI() {
+        settings = newSettings;
+        saveSettingsToStorage(settings);
+
+        // refresh durations object used by timer logic
+        durations = durationsFromSettings();
+
+        // If timer is NOT running, update the visible timer immediately to the new duration
+        if (!isRunning) {
+            timeLeftSeconds = durations[currentMode] * 60;
+        } else {
+            // If timer is running, we recompute endTime so remaining reflects current timeLeftSeconds (optional)
+            // Keep current behavior: don't forcibly reset running timer. If you want running timer to adjust:
+            // endTime = Date.now() + timeLeftSeconds * 1000;
+        }
+
+        // update controls and displayed timer
+        applySettingsToControls();
+        updateTimerDisplay();
+
+        // persist state and settings
+        saveStateToStorage();
+    }
+
+    // If enabling notifications, ensure permission (existing logic, but using our helper)
+    if (newSettings.notifications && "Notification" in window && Notification.permission !== 'granted') {
+        requestNotificationPermission().then(granted => {
+            if (!granted) {
+                newSettings.notifications = false;
+                notifToggle.classList.remove('on');
+                alert('Notifications permission denied — disabled notifications in settings.');
+            }
+            applyNewSettingsAndRefreshUI();
+            closeSettingsModal();
+        }).catch(() => {
+            // In case request fails, still apply settings without notifications
+            newSettings.notifications = false;
+            notifToggle.classList.remove('on');
+            applyNewSettingsAndRefreshUI();
+            closeSettingsModal();
+        });
+    } else {
+        applyNewSettingsAndRefreshUI();
+        closeSettingsModal();
+    }
+});
+
+
+
+
+
+
+/* close modal when clicking on overlay outside box */
+settingsModal.addEventListener('click', (e)=> { if(e.target === settingsModal) closeSettingsModal(); });
+
+/* ===== Stats modal behaviour ===== */
+openStatsBtn.addEventListener('click', ()=>{
+    statsModal.style.display = 'flex';
+    statsModal.setAttribute('aria-hidden','false');
+});
+closeStatsBtn.addEventListener('click', ()=> { statsModal.style.display='none'; statsModal.setAttribute('aria-hidden','true'); });
+statsModal.addEventListener('click', (e)=>{ if(e.target === statsModal){ statsModal.style.display='none'; statsModal.setAttribute('aria-hidden','true'); } });
+
+$('clearStats').addEventListener('click', ()=> {
+    if(!confirm('Reset all saved stats?')) return;
+    stats = {};
+    saveStats(stats);
+    refreshStatsUI();
+});
+
+/* ===== Update stats periodically and on changes (just in case) ===== */
+window.addEventListener('storage', (e)=>{
+    if(e.key === STORAGE.STATS){
+        stats = loadStats();
+        refreshStatsUI();
+    }
+});
+
+/* Save state before unload so it persists */
+window.addEventListener('beforeunload', ()=>{
+    // If running, ensure we saved endTime
+    if(isRunning && endTime){
+        state = { currentMode, isRunning:true, endTime };
+    } else {
+        state = { currentMode, isRunning:false, timeLeftSeconds };
+    }
+    saveStateToStorage();
+});
+
+/* ensure UI initial values show current durations */
+(function init(){
+    // apply saved settings to controls and runtime durations
+    settings = loadSettingsFromStorage();
+    applySettingsToControls();
+    durations = durationsFromSettings();
+
+    // ensure toggle visuals reflect loaded settings
+    if(settings.sound) soundToggle.classList.add('on'); else soundToggle.classList.remove('on');
+    if(settings.notifications) notifToggle.classList.add('on'); else notifToggle.classList.remove('on');
+
+    // restore last selected mode (if saved)
+    if(state && state.currentMode) currentMode = state.currentMode;
+    applyModeUI();
+
+    // if there was a paused timeLeft saved, use it; else set to mode default
+    if(state && typeof state.timeLeftSeconds === 'number' && !state.isRunning){
+        timeLeftSeconds = state.timeLeftSeconds;
+    } else if (!state || !state.timeLeftSeconds) {
+        timeLeftSeconds = durations[currentMode]*60;
+    }
+
+    // If there was running state stored, restore above
+    if(state && state.isRunning && state.endTime){
+        // restore handled earlier in restoreStateOnLoad — but call again to be sure
+        // (this double-call is harmless)
+    }
+
+    updateTimerDisplay();
+    refreshStatsUI();
+})();
+
+</script>
+</body>
+</html>
