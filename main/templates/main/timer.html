@@ -5,6 +5,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>HabitCanvas | Timer</title>
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -58,14 +59,13 @@
         align-items:center;
         cursor:pointer;
     }
-    .nav-btn.active{ background:#e8f0ff; color:var(--blue); font-weight:600; }
-    .btn-logout{
-        background:#e0e7ff;
-        padding:8px 16px;
-        border-radius:8px;
-        color:var(--blue);
-        text-decoration:none;
-        font-weight:600;
+    .btn-logout {
+    background: #e0e7ff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1e57ff;
+    transition: 0.2s;
     }
 
     /* ===== main box ===== */
