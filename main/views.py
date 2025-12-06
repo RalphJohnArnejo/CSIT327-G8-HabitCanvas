@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 
-from .models import LoginAttempt, Task
+from .models import LoginAttempt, Task, SubTask
 from .forms import TaskForm
 
 
@@ -201,3 +201,86 @@ def toggle_favorite(request, task_id):
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return JsonResponse({"success": True, "favorite": task.favorite, "task_id": task.id})
     return redirect("dashboard")
+
+
+# ============================================================
+# SUBTASK ACTIONS
+# ============================================================
+@login_required
+def add_subtask(request, task_id):
+    """Add a subtask to a task"""
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    if request.method == "POST" and request.headers.get("x-requested-with") == "XMLHttpRequest":
+        title = request.POST.get("title", "").strip()
+        if title:
+            subtask = SubTask.objects.create(task=task, title=title)
+            completed, total = task.subtask_progress()
+            return JsonResponse({
+                "success": True,
+                "subtask_id": subtask.id,
+                "title": subtask.title,
+                "completed": subtask.completed,
+                "progress": {"completed": completed, "total": total, "percent": task.subtask_progress_percent()}
+            })
+        return JsonResponse({"success": False, "error": "Title is required"})
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def toggle_subtask(request, subtask_id):
+    """Toggle subtask completion status"""
+    subtask = get_object_or_404(SubTask, id=subtask_id, task__user=request.user)
+    
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        subtask.completed = not subtask.completed
+        subtask.save()
+        task = subtask.task
+        completed, total = task.subtask_progress()
+        return JsonResponse({
+            "success": True,
+            "subtask_id": subtask.id,
+            "completed": subtask.completed,
+            "progress": {"completed": completed, "total": total, "percent": task.subtask_progress_percent()}
+        })
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def delete_subtask(request, subtask_id):
+    """Delete a subtask"""
+    subtask = get_object_or_404(SubTask, id=subtask_id, task__user=request.user)
+    task = subtask.task
+    
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        subtask.delete()
+        completed, total = task.subtask_progress()
+        return JsonResponse({
+            "success": True,
+            "subtask_id": subtask_id,
+            "progress": {"completed": completed, "total": total, "percent": task.subtask_progress_percent()}
+        })
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def get_subtasks(request, task_id):
+    """Get all subtasks for a task"""
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        subtasks = task.subtasks.all()
+        completed, total = task.subtask_progress()
+        return JsonResponse({
+            "success": True,
+            "subtasks": [
+                {"id": s.id, "title": s.title, "completed": s.completed}
+                for s in subtasks
+            ],
+            "progress": {"completed": completed, "total": total, "percent": task.subtask_progress_percent()}
+        })
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
