@@ -583,12 +583,86 @@ function refreshStatsUI(){
 }
 refreshStatsUI();
 
-/* ===== Timer logic (with persistence across refresh) ===== */
+/* ===== Timer logic (with Web Worker for background support) ===== */
 let timerInterval = null;
+let timerWorker = null;
 let currentMode = state.currentMode || 'focus'; // focus|short|long
 let isRunning = !!state.isRunning;
 let endTime = state.endTime || null; // ms epoch when timer will end
 let timeLeftSeconds = state.timeLeftSeconds || (settings.focus * 60); // fallback
+let lastTickTime = 0; // For throttling tick sounds
+
+// Initialize Web Worker for background timer support
+function initTimerWorker() {
+    if (typeof Worker !== 'undefined') {
+        try {
+            timerWorker = new Worker("{% static 'js/timer-worker.js' %}");
+            
+            timerWorker.onmessage = function(e) {
+                const { type, timeLeft, isRunning: workerRunning } = e.data;
+                
+                switch(type) {
+                    case 'tick':
+                        timeLeftSeconds = timeLeft;
+                        updateTimerDisplay();
+                        // Throttle tick sound to once per second
+                        const now = Date.now();
+                        if (settings.sound && now - lastTickTime >= 900) {
+                            playTickSound();
+                            lastTickTime = now;
+                        }
+                        break;
+                    case 'finished':
+                        timeLeftSeconds = 0;
+                        isRunning = false;
+                        endTime = null;
+                        timerCircle.classList.remove('running');
+                        updateTimerDisplay();
+                        state = { currentMode, isRunning: false, timeLeftSeconds: 0 };
+                        saveStateToStorage();
+                        onTimerFinish();
+                        break;
+                    case 'paused':
+                        timeLeftSeconds = timeLeft;
+                        isRunning = false;
+                        endTime = null;
+                        timerCircle.classList.remove('running');
+                        updateTimerDisplay();
+                        saveStateToStorage();
+                        break;
+                    case 'stopped':
+                        isRunning = false;
+                        endTime = null;
+                        timerCircle.classList.remove('running');
+                        break;
+                    case 'state':
+                        // Sync state from worker
+                        if (e.data.isRunning) {
+                            isRunning = true;
+                            timeLeftSeconds = e.data.timeLeft;
+                            endTime = e.data.endTime;
+                            timerCircle.classList.add('running');
+                        }
+                        updateTimerDisplay();
+                        break;
+                }
+            };
+            
+            timerWorker.onerror = function(err) {
+                console.warn('Timer worker error, falling back to main thread:', err);
+                timerWorker = null;
+            };
+            
+            console.log('Timer Web Worker initialized for background support');
+        } catch (err) {
+            console.warn('Could not initialize Web Worker:', err);
+            timerWorker = null;
+        }
+    }
+}
+
+// Initialize worker
+initTimerWorker();
 
 // initialize durations from settings object
 function durationsFromSettings(){
@@ -655,13 +729,15 @@ function applyModeUI(){
 /* update timer inner text */
 function updateTimerDisplay(){
     timerEl.textContent = formatTime(timeLeftSeconds);
+    // Update page title with timer (useful when tab is in background)
+    document.title = `${formatTime(timeLeftSeconds)} - HabitCanvas Timer`;
 }
 
 /* start timer interval
    resumeFromStorage flag used to indicate restore from saved endTime (so we avoid re-saving endTime incorrectly)
 */
 function startInterval(resumeFromStorage=false){
-    if(timerInterval) return; // already running
+    if(isRunning && timerInterval) return; // already running
     isRunning = true;
     timerCircle.classList.add('running');
 
@@ -674,28 +750,48 @@ function startInterval(resumeFromStorage=false){
         endTime = state.endTime;
     }
 
-    // tick every second
-    timerInterval = setInterval(()=>{
-        const remaining = Math.ceil((endTime - Date.now()) / 1000);
-        if(remaining <= 0){
-            // finished
-            timeLeftSeconds = 0;
-            updateTimerDisplay();
-            clearInterval(timerInterval);
-            timerInterval = null;
-            isRunning = false;
-            timerCircle.classList.remove('running');
-            // clear saved running state in storage
-            state = { currentMode, isRunning:false, timeLeftSeconds:0 };
-            saveStateToStorage();
-            onTimerFinish();
-        } else {
-            timeLeftSeconds = remaining;
-            updateTimerDisplay();
-            // tick sound (every second)
-            if(settings.sound) playTickSound();
-        }
-    }, 1000);
+    // Use Web Worker if available for background support
+    if (timerWorker) {
+        timerWorker.postMessage({
+            action: 'start',
+            data: { endTime: endTime }
+        });
+        // Also run a fallback interval for when worker messages are delayed
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            // Fallback sync from localStorage endTime
+            const remaining = Math.ceil((endTime - Date.now()) / 1000);
+            if (remaining <= 0 && isRunning) {
+                // Worker should handle this, but just in case
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }, 5000);
+    } else {
+        // Fallback: use main thread interval
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(()=>{
+            const remaining = Math.ceil((endTime - Date.now()) / 1000);
+            if(remaining <= 0){
+                // finished
+                timeLeftSeconds = 0;
+                updateTimerDisplay();
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                timerCircle.classList.remove('running');
+                // clear saved running state in storage
+                state = { currentMode, isRunning:false, timeLeftSeconds:0 };
+                saveStateToStorage();
+                onTimerFinish();
+            } else {
+                timeLeftSeconds = remaining;
+                updateTimerDisplay();
+                // tick sound (every second)
+                if(settings.sound) playTickSound();
+            }
+        }, 1000);
+    }
 
     // save state
     saveStateToStorage();
@@ -705,6 +801,12 @@ function startInterval(resumeFromStorage=false){
 function pauseTimer(){
     if(timerInterval) clearInterval(timerInterval);
     timerInterval = null;
+    
+    // Tell worker to pause
+    if (timerWorker) {
+        timerWorker.postMessage({ action: 'pause' });
+    }
+    
     isRunning = false;
     timerCircle.classList.remove('running');
     // compute current timeLeftSeconds from endTime if present
@@ -714,11 +816,18 @@ function pauseTimer(){
     }
     endTime = null;
     saveStateToStorage();
+    updateTimerDisplay();
 }
 
 function stopTimerAndReset(){
     if(timerInterval) clearInterval(timerInterval);
     timerInterval = null;
+    
+    // Tell worker to stop
+    if (timerWorker) {
+        timerWorker.postMessage({ action: 'stop' });
+    }
+    
     isRunning = false;
     timerCircle.classList.remove('running');
     timeLeftSeconds = durations[currentMode]*60;
@@ -726,6 +835,44 @@ function stopTimerAndReset(){
     saveStateToStorage();
     updateTimerDisplay();
 }
+
+/* Handle visibility change - sync timer when tab becomes visible again */
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+        // Tab is now visible - sync timer state from storage
+        const savedState = loadState();
+        if (savedState && savedState.isRunning && savedState.endTime) {
+            const remaining = Math.ceil((savedState.endTime - Date.now()) / 1000);
+            if (remaining <= 0) {
+                // Timer finished while tab was hidden
+                timeLeftSeconds = 0;
+                isRunning = false;
+                endTime = null;
+                timerCircle.classList.remove('running');
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = null;
+                state = { currentMode, isRunning: false, timeLeftSeconds: 0 };
+                saveStateToStorage();
+                onTimerFinish();
+            } else {
+                timeLeftSeconds = remaining;
+                endTime = savedState.endTime;
+                isRunning = true;
+                timerCircle.classList.add('running');
+                updateTimerDisplay();
+                
+                // Restart worker sync if needed
+                if (timerWorker && !timerInterval) {
+                    timerWorker.postMessage({
+                        action: 'sync',
+                        data: { isRunning: true, endTime: endTime }
+                    });
+                }
+            }
+        }
+        updateTimerDisplay();
+    }
+});
 
 function resetTimerToModeDefault(){
     timeLeftSeconds = durations[currentMode]*60;

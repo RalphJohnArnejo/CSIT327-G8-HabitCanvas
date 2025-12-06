@@ -36,6 +36,38 @@ class Task(models.Model):
     class Meta:
         ordering = ['-priority', '-favorite', '-created_at']  # default ordering
 
+    def subtask_progress(self):
+        """Returns (completed_count, total_count) for subtasks"""
+        subtasks = self.subtasks.all()
+        total = subtasks.count()
+        completed = subtasks.filter(completed=True).count()
+        return completed, total
+
+    def subtask_progress_percent(self):
+        """Returns progress percentage for subtasks"""
+        completed, total = self.subtask_progress()
+        if total == 0:
+            return 0
+        return int((completed / total) * 100)
+
+
+# ===== SUBTASK MODEL =====
+class SubTask(models.Model):
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name="subtasks"
+    )
+    title = models.CharField(max_length=255)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} ({'Done' if self.completed else 'Pending'})"
+
+    class Meta:
+        ordering = ['created_at']
+
 
 # ===== LOGIN ATTEMPT MODEL =====
 # Regex pattern for allowed emails

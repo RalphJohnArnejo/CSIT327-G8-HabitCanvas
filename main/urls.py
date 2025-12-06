@@ -3,7 +3,9 @@ from django.contrib.auth import views as auth_views
 from .views import (
     landing_view, register_view, login_view, dashboard_view, logout_view,
     add_task, edit_task, delete_task, toggle_complete, toggle_favorite,
-    timer_view  # ← ADDED THIS
+    timer_view,
+    # Subtask views
+    add_subtask, toggle_subtask, delete_subtask, get_subtasks
 )
 
 urlpatterns = [
@@ -26,6 +28,12 @@ urlpatterns = [
 
     # Timer Page
     path("timer/", timer_view, name="timer"),
+
+    # Subtasks
+    path("tasks/<int:task_id>/subtasks/", get_subtasks, name="get_subtasks"),
+    path("tasks/<int:task_id>/subtasks/add/", add_subtask, name="add_subtask"),
+    path("subtasks/<int:subtask_id>/toggle/", toggle_subtask, name="toggle_subtask"),
+    path("subtasks/<int:subtask_id>/delete/", delete_subtask, name="delete_subtask"),
 
     # Password reset
     path("password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
