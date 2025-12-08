@@ -938,30 +938,18 @@ resetBtn.addEventListener('click', ()=>{
 });
 
 /* mode buttons */
-focusModeBtn.addEventListener('click', ()=>{
-    currentMode = 'focus';
-    durations = durationsFromSettings();
-    timeLeftSeconds = durations.focus*60;
-    applyModeUI();
-    updateTimerDisplay();
-    saveStateToStorage();
+focusModeBtn.addEventListener('click', () => {
+    switchMode('focus');
 });
-shortModeBtn.addEventListener('click', ()=>{
-    currentMode = 'short';
-    durations = durationsFromSettings();
-    timeLeftSeconds = durations.short*60;
-    applyModeUI();
-    updateTimerDisplay();
-    saveStateToStorage();
+
+shortModeBtn.addEventListener('click', () => {
+    switchMode('short');
 });
-longModeBtn.addEventListener('click', ()=>{
-    currentMode = 'long';
-    durations = durationsFromSettings();
-    timeLeftSeconds = durations.long*60;
-    applyModeUI();
-    updateTimerDisplay();
-    saveStateToStorage();
+
+longModeBtn.addEventListener('click', () => {
+    switchMode('long');
 });
+
 
 /* ===== Settings modal behaviour ===== */
 openSettingsBtn.addEventListener('click', ()=>{
@@ -1141,6 +1129,27 @@ window.addEventListener('beforeunload', ()=>{
     updateTimerDisplay();
     refreshStatsUI();
 })();
+
+function switchMode(newMode) {
+    // Change mode first so stopTimerAndReset uses the new mode's duration
+    currentMode = newMode;
+    durations = durationsFromSettings(); // refresh in case settings changed
+
+    // This will:
+    // - clear interval
+    // - tell the worker to stop
+    // - set isRunning = false
+    // - set timeLeftSeconds = durations[currentMode] * 60
+    // - update display + save state
+    stopTimerAndReset();
+
+    // Update button active-state styling
+    applyModeUI();
+
+    // Save current mode explicitly (already done in stopTimerAndReset, but safe)
+    saveStateToStorage();
+}
+
 
 </script>
 </body>
