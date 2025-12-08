@@ -215,6 +215,8 @@
         .main-box{ padding:22px; margin:20px; }
         .nav-center{ position:static; transform:none; }
     }
+
+    
 </style>
 </head>
 <body>
@@ -351,6 +353,26 @@
 
             <div style="display:flex;justify-content:flex-end;margin-top:10px;">
                 <button id="clearStats" class="top-btn" title="Clear stats">Reset Stats</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modeConfirmModal" class="settings-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="settings-box" role="document">
+        <div class="settings-header">
+            <h3>Switch Timer Mode?</h3>
+            <button id="modeConfirmClose" class="settings-close" title="Close">×</button>
+        </div>
+
+        <div class="settings-body">
+            <p id="modeConfirmText" style="margin-bottom:18px;">
+                You have a timer in progress. Switching modes will stop it and reset the timer.
+            </p>
+
+            <div class="settings-footer">
+                <button id="modeConfirmCancel" class="btn-cancel">Cancel</button>
+                <button id="modeConfirmOk" class="btn-save">Switch Mode</button>
             </div>
         </div>
     </div>
@@ -549,6 +571,15 @@ const todayMinutesEl = $('todayMinutes');
 const todaySessionsEl = $('todaySessions');
 const weekMinutesEl = $('weekMinutes');
 const weekSessionsEl = $('weekSessions');
+
+const modeConfirmModal = $('modeConfirmModal');
+const modeConfirmText = $('modeConfirmText');
+const modeConfirmClose = $('modeConfirmClose');
+const modeConfirmCancel = $('modeConfirmCancel');
+const modeConfirmOk = $('modeConfirmOk');
+
+let pendingMode = null;
+
 
 /* ===== Setup UI from settings ===== */
 function applySettingsToControls(){
@@ -939,16 +970,17 @@ resetBtn.addEventListener('click', ()=>{
 
 /* mode buttons */
 focusModeBtn.addEventListener('click', () => {
-    switchMode('focus');
+    confirmAndSwitchMode('focus');
 });
 
 shortModeBtn.addEventListener('click', () => {
-    switchMode('short');
+    confirmAndSwitchMode('short');
 });
 
 longModeBtn.addEventListener('click', () => {
-    switchMode('long');
+    confirmAndSwitchMode('long');
 });
+
 
 
 /* ===== Settings modal behaviour ===== */
@@ -1149,6 +1181,60 @@ function switchMode(newMode) {
     // Save current mode explicitly (already done in stopTimerAndReset, but safe)
     saveStateToStorage();
 }
+
+function confirmAndSwitchMode(newMode) {
+    if (currentMode === newMode) return;
+
+    const labelMap = {
+        focus: 'Focus',
+        short: 'Short Break',
+        long: 'Long Break'
+    };
+
+    const defaultSecondsForCurrent = durations[currentMode] * 60;
+    const timerInProgress = isRunning || timeLeftSeconds !== defaultSecondsForCurrent;
+
+    if (!timerInProgress) {
+        switchMode(newMode);
+        return;
+    }
+
+    pendingMode = newMode;
+
+    const currentLabel = labelMap[currentMode] || 'current';
+    const newLabel = labelMap[newMode] || 'new';
+
+    modeConfirmText.textContent =
+        `Switching to ${newLabel} will stop and reset the current timer.`;
+
+    modeConfirmModal.style.display = 'flex';
+    modeConfirmModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeModeConfirmModal() {
+    modeConfirmModal.style.display = 'none';
+    modeConfirmModal.setAttribute('aria-hidden', 'true');
+    pendingMode = null;
+}
+
+modeConfirmClose.addEventListener('click', closeModeConfirmModal);
+modeConfirmCancel.addEventListener('click', closeModeConfirmModal);
+
+modeConfirmOk.addEventListener('click', () => {
+    if (pendingMode) {
+        switchMode(pendingMode);
+    }
+    closeModeConfirmModal();
+});
+
+modeConfirmModal.addEventListener('click', (e) => {
+    if (e.target === modeConfirmModal) {
+        closeModeConfirmModal();
+    }
+});
+
+
+
 
 
 </script>
