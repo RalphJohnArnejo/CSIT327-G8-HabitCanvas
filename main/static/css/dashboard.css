@@ -231,8 +231,7 @@ body {
     padding: 20px 24px;
     margin-bottom: 16px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;   /* main row on top, subtasks below */
     transition: all 0.3s ease;
     box-shadow: var(--card-shadow);
 }
@@ -243,6 +242,7 @@ body {
     border-color: var(--accent-blue);
 }
 
+/* generic left group inside card rows */
 .left {
     display: flex;
     align-items: center;
@@ -281,12 +281,16 @@ body {
 .title-category {
     display: flex;
     flex-direction: column;
+    min-width: 0;  /* important in flex layouts */
 }
 
 .task-title {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--dark-brown);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .crossed {
@@ -323,12 +327,28 @@ body {
     color: white;
 }
 
-/* ====== TASK DEADLINE ====== */
-.task-card .task-deadline {
+/* ========== TASK MAIN ROW LAYOUT + DEADLINE ========== */
+
+.task-main-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;      /* keep everything on one line */
+    column-gap: 16px;       /* spacing between left, deadline, right */
+    position: relative;
+}
+
+/* left is the title/category area inside main row */
+.task-main-row .left {
+    flex: 1 1 auto;         /* takes the remaining space */
+    min-width: 0;
+}
+
+/* deadline pill between left & right */
+.task-main-row .task-deadline {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);  /* perfectly center in the row */
     font-size: 12px;
     color: var(--dark-brown);
     background: linear-gradient(135deg, #FFF5E6 0%, #FFE8CC 100%);
@@ -338,17 +358,27 @@ body {
     align-items: center;
     gap: 6px;
     white-space: nowrap;
-    pointer-events: none;
     font-weight: 600;
     border: 1px solid #FFD699;
+    pointer-events: none;   /* so clicks go through if needed */
 }
 
-.task-card .task-deadline i {
+.task-main-row .task-deadline i {
     font-size: 11px;
     color: var(--accent-red);
 }
 
-/* ========== TASK CARD RIGHT ACTIONS ========== */
+
+/* right actions, pushed to the far right */
+.task-main-row .right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;      /* pushes icons to far right */
+    flex-shrink: 0;         /* prevent collapsing */
+}
+
+/* ========== TASK CARD RIGHT ACTIONS (generic) ========== */
 .right {
     display: flex;
     align-items: center;
@@ -592,18 +622,6 @@ footer {
     font-size: 14px;
 }
 
-/* ========== TASK CARD LAYOUT ========== */
-.task-card {
-    flex-direction: column;
-}
-
-.task-main-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
 /* ========== SUBTASK STYLES ========== */
 .subtask-toggle-btn {
     display: flex;
@@ -778,5 +796,3 @@ footer {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(155, 123, 184, 0.4);
 }
-
-
