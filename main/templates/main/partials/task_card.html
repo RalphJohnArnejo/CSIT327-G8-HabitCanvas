@@ -33,7 +33,7 @@
 
             <a href="#" class="subtask-toggle-btn" data-id="{{ task.id }}">
                 <i class="fa fa-list-check"></i>
-                <span class="subtask-count">
+                <span class="subtask-count" data-task-id="{{ task.id }}">
                     {% with task.subtask_progress as progress %}
                         {% if progress.1 > 0 %}
                             {{ progress.0 }}/{{ progress.1 }}
