@@ -265,6 +265,7 @@ body {
     justify-content: center;
     transition: all 0.3s ease;
     cursor: pointer;
+    flex-shrink: 0; /* don’t let the circle squish */
 }
 
 .circle:hover {
@@ -281,7 +282,8 @@ body {
 .title-category {
     display: flex;
     flex-direction: column;
-    min-width: 0;  /* important in flex layouts */
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .task-title {
@@ -332,23 +334,25 @@ body {
 .task-main-row {
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;      /* keep everything on one line */
-    column-gap: 16px;       /* spacing between left, deadline, right */
-    position: relative;
+    flex-wrap: nowrap;
+    column-gap: 16px;
+    position: relative;  /* for absolute deadline */
 }
 
 /* left is the title/category area inside main row */
 .task-main-row .left {
-    flex: 1 1 auto;         /* takes the remaining space */
+    flex: 1 1 auto;
     min-width: 0;
+    /* keep the text from reaching the middle where the deadline sits */
+    max-width: calc(50% - 120px); /* tweak 120 if you change chip width */
 }
 
-/* deadline pill between left & right */
+/* deadline pill centered in the row */
 .task-main-row .task-deadline {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);  /* perfectly center in the row */
+    transform: translate(-50%, -50%);
     font-size: 12px;
     color: var(--dark-brown);
     background: linear-gradient(135deg, #FFF5E6 0%, #FFE8CC 100%);
@@ -360,7 +364,7 @@ body {
     white-space: nowrap;
     font-weight: 600;
     border: 1px solid #FFD699;
-    pointer-events: none;   /* so clicks go through if needed */
+    pointer-events: none;
 }
 
 .task-main-row .task-deadline i {
@@ -368,14 +372,13 @@ body {
     color: var(--accent-red);
 }
 
-
 /* right actions, pushed to the far right */
 .task-main-row .right {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-left: auto;      /* pushes icons to far right */
-    flex-shrink: 0;         /* prevent collapsing */
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 /* ========== TASK CARD RIGHT ACTIONS (generic) ========== */

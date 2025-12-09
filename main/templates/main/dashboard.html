@@ -313,19 +313,27 @@ function attachTaskEvents(){
             .then(data=>{
                 if(data.success){
                     if(isComplete){
-                        const card = btn.closest(".task-card");
+                        const card   = btn.closest(".task-card");
                         const circle = card.querySelector(".circle");
-                        const icon = btn.querySelector("i");
+                        const icon   = btn.querySelector("i");
 
                         if(data.completed){
+                            // move to completed list
                             document.getElementById("completed-tasks").appendChild(card);
+
+                            // ✅ mark visually completed
+                            card.classList.add("completed");
                             card.querySelector(".task-title").classList.add("crossed");
                             circle.classList.add("checked");
                             icon.classList.remove("fa-check");
                             icon.classList.add("fa-rotate-left");
                             circle.querySelector("i").style.display="block";
                         }else{
+                            // move back to active list
                             document.getElementById("active-tasks").appendChild(card);
+
+                            // 🔄 remove completed visuals
+                            card.classList.remove("completed");
                             card.querySelector(".task-title").classList.remove("crossed");
                             circle.classList.remove("checked");
                             icon.classList.remove("fa-rotate-left");
@@ -588,6 +596,7 @@ function updateSubtaskProgress(taskId, progress){
 // Attach events initially
 attachTaskEvents();
 </script>
+
 
 </body>
 </html>
