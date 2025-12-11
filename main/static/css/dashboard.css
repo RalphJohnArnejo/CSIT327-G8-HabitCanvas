@@ -422,6 +422,12 @@ body {
 .right .favorite-btn:hover i {
     color: #FFB800;
 }
+.right .favorite-btn i.starred {
+    color: #FFB800 !important;
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 4px rgba(255, 184, 0, 0.45));
+}
+
 
 .right .edit-btn:hover {
     background: #E8F4FF;
@@ -1308,4 +1314,33 @@ footer {
         flex-direction: column;
         align-items: flex-start;
     }
+}
+
+.complete-btn,
+.complete-btn:focus,
+.complete-btn:active {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.task-card .right button,
+.task-card .right button:focus,
+.task-card .right button:active {
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.task-card .right .undo-btn,
+.task-card .right .undo-btn:focus,
+.task-card .right .undo-btn:active {
+    background: none !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
