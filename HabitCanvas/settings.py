@@ -4,11 +4,11 @@ Django settings for HabitCanvas project.
 
 from pathlib import Path
 import os
-import dj_database_url
-from dotenv import load_dotenv
+# import dj_database_url
+# from dotenv import load_dotenv
 
 # Load environment variables from .env (for local development)
-load_dotenv()
+# load_dotenv()
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,18 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 
 # DEBUG is False in production, True only on local machine
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+DEBUG = True # os.getenv("DEBUG", "False").lower() == "true"
 
 # Allow all hosts — Render URL included
 ALLOWED_HOSTS = ['*']
-
-# CSRF trusted origins for local development and production
-CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-    'http://127.0.0.1:50206',
-    'http://localhost:50206',
-]
 
 
 # --------------------------
@@ -103,25 +95,12 @@ TEMPLATES = [
 # DATABASE (Local = SQLite, Render = PostgreSQL)
 # --------------------------
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if DATABASE_URL:
-    # Production: Use PostgreSQL with SSL
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=True
-        )
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
-else:
-    # Local development: Use SQLite (no SSL)
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
 
 
 # --------------------------
