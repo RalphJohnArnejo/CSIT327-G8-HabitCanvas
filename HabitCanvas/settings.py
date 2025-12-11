@@ -4,11 +4,11 @@ Django settings for HabitCanvas project.
 
 from pathlib import Path
 import os
-import dj_database_url
-from dotenv import load_dotenv
+# import dj_database_url
+# from dotenv import load_dotenv
 
 # Load environment variables from .env (for local development)
-load_dotenv()
+# load_dotenv()
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 
 # DEBUG is False in production, True only on local machine
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+DEBUG = True # os.getenv("DEBUG", "False").lower() == "true"
 
 # Allow all hosts — Render URL included
 ALLOWED_HOSTS = ['*']
@@ -96,11 +96,10 @@ TEMPLATES = [
 # --------------------------
 
 DATABASES = {
-    "default": dj_database_url.config(
-        default="sqlite:///db.sqlite3",   # fallback for local use
-        conn_max_age=600,
-        ssl_require=True
-    )
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }
 
 

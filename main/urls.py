@@ -3,7 +3,8 @@ from django.contrib.auth import views as auth_views
 from .views import (
     landing_view, register_view, login_view, dashboard_view, logout_view,
     add_task, edit_task, delete_task, toggle_complete, toggle_favorite,
-    timer_view  # ← ADDED THIS
+    timer_view, save_session, get_timer_stats,
+    calendar_view, get_events, add_event, edit_event, delete_event, reschedule_event
 )
 
 urlpatterns = [
@@ -26,6 +27,16 @@ urlpatterns = [
 
     # Timer Page
     path("timer/", timer_view, name="timer"),
+    path("timer/save_session/", save_session, name="save_session"),
+    path("timer/get_stats/", get_timer_stats, name="get_timer_stats"),
+
+    # Calendar
+    path("calendar/", calendar_view, name="calendar"),
+    path("calendar/get_events/", get_events, name="get_events"),
+    path("calendar/add_event/", add_event, name="add_event"),
+    path("calendar/edit_event/<int:event_id>/", edit_event, name="edit_event"),
+    path("calendar/delete_event/<int:event_id>/", delete_event, name="delete_event"),
+    path('calendar/reschedule_event/<int:event_id>/', reschedule_event, name='reschedule_event'),
 
     # Password reset
     path("password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
