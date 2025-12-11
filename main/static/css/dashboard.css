@@ -1030,16 +1030,6 @@ footer {
     box-shadow: 0 6px 16px rgba(232, 90, 90, 0.4);
 }
 
-.ctrl-btn.reset {
-    background: #ffffff;
-    color: var(--primary-brown);
-    border: 2px dashed var(--primary-blue);
-}
-
-.ctrl-btn.reset:hover {
-    background: #F8FBFD;
-}
-
 /* Small helpers for timer settings / stats layout */
 .settings-divider {
     margin: 8px 0 10px 0;
@@ -1054,6 +1044,29 @@ footer {
     display: flex;
     justify-content: flex-end;
     margin-top: 10px;
+}
+
+.stats-reset-row #clearStats {
+    background: linear-gradient(135deg, #FFE8E8 0%, #FFD6D6 100%);
+    color: var(--accent-red);
+    border: 2px solid var(--accent-red);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(232, 90, 90, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stats-reset-row #clearStats:hover {
+    background: linear-gradient(135deg, var(--accent-red) 0%, #D64545 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(232, 90, 90, 0.35);
+}
+
+.stats-reset-row #clearStats i {
+    margin-right: 4px;
 }
 
 .mode-confirm-text {

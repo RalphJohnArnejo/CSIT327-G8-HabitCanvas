@@ -40,7 +40,6 @@
                 <button id="startBtn" class="ctrl-btn start"><i class="fa fa-play"></i> Start</button>
                 <button id="pauseBtn" class="ctrl-btn pause"><i class="fa fa-pause"></i> Pause</button>
                 <button id="stopBtn" class="ctrl-btn stop"><i class="fa fa-stop"></i> Stop</button>
-                <button id="resetBtn" class="ctrl-btn reset"><i class="fa fa-rotate-left"></i> Reset</button>
             </div>
         </div>
     </div>
@@ -328,7 +327,6 @@ const timerCircle = $('timerCircle');
 const startBtn = $('startBtn');
 const pauseBtn = $('pauseBtn');
 const stopBtn = $('stopBtn');
-const resetBtn = $('resetBtn');
 
 const focusModeBtn = $('focusMode');
 const shortModeBtn = $('shortMode');
@@ -729,10 +727,6 @@ pauseBtn.addEventListener('click', ()=>{
 
 stopBtn.addEventListener('click', ()=>{
     stopTimerAndReset();
-});
-
-resetBtn.addEventListener('click', ()=>{
-    resetTimerToModeDefault();
 });
 
 /* mode buttons */
