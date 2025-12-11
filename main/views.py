@@ -6,14 +6,8 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
-
-<<<<<<< HEAD
-from .models import LoginAttempt, Task, CalendarEvent, TimerSession, UserStreak
+from .models import LoginAttempt, Task, CalendarEvent, TimerSession, UserStreak, SubTask
 from .forms import TaskForm, CalendarEventForm
-=======
-from .models import LoginAttempt, Task, SubTask
-from .forms import TaskForm
->>>>>>> 8c46f1bb659f456ec84674ec6dc118f9466e9ec4
 
 
 # ============================================================
@@ -273,7 +267,6 @@ def toggle_favorite(request, task_id):
     return redirect("dashboard")
 
 
-<<<<<<< HEAD
 
 # ============================================================
 # TIMER API
@@ -813,7 +806,6 @@ def reschedule_event(request, event_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
-=======
 # ============================================================
 # SUBTASK ACTIONS
 # ============================================================
