@@ -566,68 +566,215 @@ function attachTaskEvents(){
         };
     });
 
-    /* COMPLETE + DELETE */
-document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn=>{
-    btn.onclick = e=>{
+/* COMPLETE + DELETE */
+document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn => {
+    btn.onclick = e => {
         e.preventDefault();
 
         const id = btn.dataset.id;
-        const complete = btn.classList.contains("complete-btn");
+        const isCompleteBtn = btn.classList.contains("complete-btn");
 
-        fetch(complete ? `/tasks/toggle_complete/${id}/` : `/tasks/delete/${id}/`, {
-            method:"POST",
-            headers:{
+        fetch(isCompleteBtn ? `/tasks/toggle_complete/${id}/` : `/tasks/delete/${id}/`, {
+            method: "POST",
+            headers: {
                 "X-CSRFToken": getCookie("csrftoken"),
-                "X-Requested-With":"XMLHttpRequest"
+                "X-Requested-With": "XMLHttpRequest"
             }
         })
-        .then(r=>r.json())
-        .then(data=>{
+        .then(r => r.json())
+        .then(data => {
             if (!data.success) return;
 
             const card = document.querySelector(`.task-card[data-id="${id}"]`);
 
-            if (complete){
-
-                /* 🔵 Get the circle + check icon */
-                const circle = card.querySelector(".circle");
-                const checkIcon = circle.querySelector("i");
-
-                if (data.completed){
-                    // Move to completed section
-                    document.getElementById("completed-tasks").appendChild(card);
-                    card.classList.add("completed");
-                    card.querySelector(".task-title").classList.add("crossed");
-
-                    // 🟢 Turn circle green with check
-                    circle.classList.add("checked");
-                    checkIcon.style.display = "block";
-
-                    btn.querySelector("i").classList.replace("fa-check", "fa-undo");
-
-                } else {
-                    // Move back to active
-                    document.getElementById("active-tasks").appendChild(card);
-                    card.classList.remove("completed");
-                    card.querySelector(".task-title").classList.remove("crossed");
-
-                    // 🔵 Reset circle back to blue, remove check
-                    circle.classList.remove("checked");
-                    checkIcon.style.display = "none";
-
-                    btn.querySelector("i").classList.replace("fa-undo", "fa-check");
-                    sortTasksByPriority();
-                }
-
-                refreshActiveCount();
-
-            } else {
+            /* DELETE TASK */
+            if (!isCompleteBtn) {
                 card.remove();
                 refreshActiveCount();
+                return;
             }
+
+            /* COMPLETE BUTTON CLICKED */
+            const circle = card.querySelector(".circle");
+            const checkIcon = circle.querySelector("i");
+
+            /* GET ALL SUBTASKS */
+            const subtasks = card.querySelectorAll(".subtask-item");
+            const total = subtasks.length;
+
+            if (data.completed) {
+                /* ================================
+                   TASK → COMPLETED
+                ================================= */
+                document.getElementById("completed-tasks").appendChild(card);
+                card.classList.add("completed");
+                card.querySelector(".task-title").classList.add("crossed");
+
+                /* Circle UI */
+                circle.classList.add("checked");
+                checkIcon.style.display = "block";
+
+                /* Change button icon (check → undo) */
+                btn.querySelector("i").classList.replace("fa-check", "fa-undo");
+
+                /* Mark all subtasks complete */
+                subtasks.forEach(item => {
+                    item.classList.add("completed");
+                    item.querySelector(".subtask-title").classList.add("crossed");
+
+                    const cb = item.querySelector("input[type='checkbox']");
+                    cb.checked = true;
+                    cb.disabled = true;
+
+                    const delBtn = item.querySelector(".subtask-delete-btn");
+                    if (delBtn) delBtn.disabled = true;
+                });
+
+                /* UPDATE PROGRESS TO 100% */
+                updateSubtaskProgress(id, {
+                    completed: total,
+                    total: total,
+                    percent: 100
+                });
+
+            } else {
+                /* ================================
+                   TASK → BACK TO ACTIVE
+                ================================= */
+                document.getElementById("active-tasks").appendChild(card);
+                card.classList.remove("completed");
+                card.querySelector(".task-title").classList.remove("crossed");
+
+                /* Circle UI */
+                circle.classList.remove("checked");
+                checkIcon.style.display = "none";
+
+                /* Undo → check */
+                btn.querySelector("i").classList.replace("fa-undo", "fa-check");
+
+                sortTasksByPriority();
+
+                /* Reset subtask status */
+                subtasks.forEach(item => {
+                    item.classList.remove("completed");
+                    item.querySelector(".subtask-title").classList.remove("crossed");
+
+                    const cb = item.querySelector("input[type='checkbox']");
+                    cb.checked = false;
+                    cb.disabled = false;
+
+                    const delBtn = item.querySelector(".subtask-delete-btn");
+                    if (delBtn) delBtn.disabled = false;
+                });
+
+                /* RESET PROGRESS TO 0% */
+                updateSubtaskProgress(id, {
+                    completed: 0,
+                    total: total,
+                    percent: 0
+                });
+            }
+
+            refreshActiveCount();
         });
     };
 });
+
+function toggleTaskComplete(id, sourceBtnOrCircle) {
+
+    fetch(`/tasks/toggle_complete/${id}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) return;
+
+        const card = document.querySelector(`.task-card[data-id="${id}"]`);
+        const circle = card.querySelector(".circle");
+        const checkIcon = circle.querySelector("i");
+        const completeBtnIcon = card.querySelector(".complete-btn i");
+        const subtasks = card.querySelectorAll(".subtask-item");
+        const total = subtasks.length;
+
+        if (data.completed) {
+            /* Move to completed section */
+            document.getElementById("completed-tasks").appendChild(card);
+            card.classList.add("completed");
+            card.querySelector(".task-title").classList.add("crossed");
+
+            /* Circle → green */
+            circle.classList.add("checked");
+            checkIcon.style.display = "block";
+
+            /* Change button icon */
+            completeBtnIcon.classList.replace("fa-check", "fa-undo");
+
+            /* Complete subtasks */
+            subtasks.forEach(item => {
+                item.classList.add("completed");
+                item.querySelector(".subtask-title").classList.add("crossed");
+
+                const cb = item.querySelector("input[type='checkbox']");
+                cb.checked = true;
+                cb.disabled = true;
+
+                const delBtn = item.querySelector(".subtask-delete-btn");
+                if (delBtn) delBtn.disabled = true;
+            });
+
+            /* Update progress to 100% */
+            updateSubtaskProgress(id, {
+                completed: total,
+                total: total,
+                percent: 100
+            });
+
+        } else {
+            /* Move back to active tasks */
+            document.getElementById("active-tasks").appendChild(card);
+            card.classList.remove("completed");
+            card.querySelector(".task-title").classList.remove("crossed");
+
+            /* Reset circle */
+            circle.classList.remove("checked");
+            checkIcon.style.display = "none";
+
+            /* Undo → check */
+            completeBtnIcon.classList.replace("fa-undo", "fa-check");
+
+            sortTasksByPriority();
+
+            /* Reset subtasks */
+            subtasks.forEach(item => {
+                item.classList.remove("completed");
+                item.querySelector(".subtask-title").classList.remove("crossed");
+
+                const cb = item.querySelector("input[type='checkbox']");
+                cb.checked = false;
+                cb.disabled = false;
+
+                const delBtn = item.querySelector(".subtask-delete-btn");
+                if (delBtn) delBtn.disabled = false;
+            });
+
+            /* Update progress to 0% */
+            updateSubtaskProgress(id, {
+                completed: 0,
+                total: total,
+                percent: 0
+            });
+        }
+
+        refreshActiveCount();
+    });
+}
+
+
+
 
 
     /* FAVORITE */
@@ -661,97 +808,88 @@ document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn=>{
         };
     });
 
-    /* ADD SUBTASK */
-    document.querySelectorAll(".add-subtask-btn").forEach(btn=>{
-        btn.onclick = ()=>{
-            const input = btn.parentElement.querySelector(".subtask-input");
-            const text = input.value.trim();
-            if (text) addSubtask(btn.dataset.taskId, text, input);
-        };
-    });
+    /* ADD SUBTASK (blocked if task completed) */
+document.querySelectorAll(".add-subtask-btn").forEach(btn => {
+    btn.onclick = () => {
+        const taskCard = btn.closest(".task-card");
 
-    /* ENTER → ADD SUBTASK */
-    document.querySelectorAll(".subtask-input").forEach(input=>{
-        input.onkeypress = e=>{
-            if (e.key === "Enter"){
-                e.preventDefault();
-                const text = input.value.trim();
-                if (text) addSubtask(input.dataset.taskId, text, input);
-            }
-        };
-    });
+        if (taskCard.classList.contains("completed")) {
+            // Optional visual feedback
+            btn.style.opacity = "0.5";
+            btn.style.cursor = "not-allowed";
+            return;
+        }
 
-    /* CHECK SUBTASK */
-    document.querySelectorAll(".subtask-checkbox input").forEach(box=>{
-        box.onchange = ()=> toggleSubtask(box.dataset.subtaskId, box);
-    });
+        const input = taskCard.querySelector(".subtask-input");
+        const text = input.value.trim();
+        if (text) addSubtask(btn.dataset.taskId, text, input);
+    };
+});
 
-    /* DELETE SUBTASK */
-    document.querySelectorAll(".subtask-delete-btn").forEach(btn => {
-        btn.onclick = e => {
+
+
+   /* ENTER → ADD SUBTASK (blocked if completed) */
+document.querySelectorAll(".subtask-input").forEach(input => {
+    input.onkeypress = e => {
+        if (e.key === "Enter") {
             e.preventDefault();
-            deleteSubtask(btn.dataset.subtaskId, btn);
-        };
-    });
 
-        /* CLICKABLE CIRCLE TO TOGGLE COMPLETE */
+            const taskCard = input.closest(".task-card");
+
+            if (taskCard.classList.contains("completed")) {
+                input.blur();
+                return;
+            }
+
+            const text = input.value.trim();
+            if (text) addSubtask(input.dataset.taskId, text, input);
+        }
+    };
+});
+
+
+
+
+ /* CHECK SUBTASK (blocked if task completed) */
+document.querySelectorAll(".subtask-checkbox input").forEach(box => {
+    box.onchange = () => {
+
+        const taskCard = box.closest(".task-card");
+        if (taskCard.classList.contains("completed")) {
+            box.checked = !box.checked;  // revert toggle
+            return;
+        }
+
+        toggleSubtask(box.dataset.subtaskId, box);
+    };
+});
+
+
+
+/* DELETE SUBTASK (blocked if task completed) */
+document.querySelectorAll(".subtask-delete-btn").forEach(btn => {
+    btn.onclick = e => {
+        e.preventDefault();
+
+        const taskCard = btn.closest(".task-card");
+        if (taskCard.classList.contains("completed")) {
+            return; // block delete
+        }
+
+        deleteSubtask(btn.dataset.subtaskId, btn);
+    };
+});
+
+
+
+       /* CLICKABLE CIRCLE TO TOGGLE COMPLETE */
     document.querySelectorAll(".circle").forEach(circle => {
-
         circle.onclick = e => {
             e.preventDefault();
-
-            const id = circle.dataset.id;
-
-            fetch(`/tasks/toggle_complete/${id}/`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken"),
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (!data.success) return;
-
-                const card = document.querySelector(`.task-card[data-id="${id}"]`);
-                const checkIcon = circle.querySelector("i");
-
-                // Find the COMPLETE button inside this card
-                const completeBtn = card.querySelector(".complete-btn i");
-
-                if (data.completed) {
-                    // Move card to completed section
-                    document.getElementById("completed-tasks").appendChild(card);
-                    card.classList.add("completed");
-                    card.querySelector(".task-title").classList.add("crossed");
-
-                    // Change circle → green + show check
-                    circle.classList.add("checked");
-                    checkIcon.style.display = "block";
-
-                    // Change complete button → undo icon
-                    completeBtn.classList.replace("fa-check", "fa-undo");
-
-                } else {
-                    // Move card back to active
-                    document.getElementById("active-tasks").appendChild(card);
-                    card.classList.remove("completed");
-                    card.querySelector(".task-title").classList.remove("crossed");
-
-                    // Reset circle → blue + hide check
-                    circle.classList.remove("checked");
-                    checkIcon.style.display = "none";
-
-                    // Change complete button → check icon
-                    completeBtn.classList.replace("fa-undo", "fa-check");
-
-                    sortTasksByPriority();
-                }
-
-                refreshActiveCount();
-            });
+            toggleTaskComplete(circle.dataset.id, circle);
         };
     });
+
 
 
 
