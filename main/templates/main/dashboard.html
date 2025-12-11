@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +8,8 @@
 <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
 
@@ -19,10 +21,7 @@
     </div>
     <div class="nav-center">
         <a href="#" class="nav-btn active"><i class="fa fa-list"></i> Tasks</a>
-
-        <!-- Timer now goes to a separate page -->
         <a href="/timer" class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
-
         <a href="#" class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
     </div>
     <div class="right">
@@ -39,7 +38,9 @@
                 <span id="activeTaskCount">{{ active_count }}</span> active tasks
             </p>
         </div>
-        <a href="#" class="btn-primary" id="openAddBtn"><i class="fa fa-plus"></i> Add new task</a>
+        <a href="#" class="btn-primary" id="openAddBtn">
+            <i class="fa fa-plus"></i> Add new task
+        </a>
     </div>
 
     <!-- FILTERS -->
@@ -90,8 +91,10 @@
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Add New Task</h2>
+
         <form id="addTaskForm" method="POST" action="{% url 'add_task' %}">
             {% csrf_token %}
+            
             <label for="title">Task Title</label>
             <input type="text" name="title" id="title" required>
 
@@ -110,7 +113,7 @@
             </select>
 
             <label for="due_date">Due Date</label>
-            <input type="date" name="due_date" id="due_date">
+            <input type="text" name="due_date" id="due_date" class="flatpickr">
 
             <label for="priority">Priority</label>
             <select name="priority" id="priority">
@@ -149,7 +152,7 @@
             </select>
 
             <label for="edit_due_date">Due Date</label>
-            <input type="date" name="due_date" id="edit_due_date">
+            <input type="text" name="due_date" id="edit_due_date" class="flatpickr">
 
             <label for="edit_priority">Priority</label>
             <select name="priority" id="edit_priority">
@@ -163,10 +166,8 @@
     </div>
 </div>
 
+<!-- JAVASCRIPT SECTION -->
 <script>
-/* ---------------------------
-   CSRF Helper
----------------------------- */
 function getCookie(name){
     let cookieValue = null;
     if(document.cookie!==""){
@@ -177,26 +178,23 @@ function getCookie(name){
     return cookieValue;
 }
 
-/* ---------------------------
-   Active Count + Sort
----------------------------- */
 function refreshActiveCount(){
-    document.getElementById("activeTaskCount").textContent = document.querySelectorAll("#active-tasks .task-card").length;
+    document.getElementById("activeTaskCount")
+        .textContent = document.querySelectorAll("#active-tasks .task-card").length;
 }
 
 function sortTasksByPriority(){
-    const container = document.getElementById("active-tasks");
+    const container=document.getElementById("active-tasks");
     Array.from(container.querySelectorAll(".task-card"))
         .sort((a,b)=>Number(b.dataset.priority)-Number(a.dataset.priority))
         .forEach(task=>container.appendChild(task));
 }
 
-/* ---------------------------
-   MODALS
----------------------------- */
+/* MODAL HANDLING */
 const addModal=document.getElementById("addModal");
 const openAddBtn=document.getElementById("openAddBtn");
 const closeAdd=addModal.querySelector(".close");
+
 openAddBtn.onclick=e=>{e.preventDefault(); addModal.style.display="block";};
 closeAdd.onclick=()=>addModal.style.display="none";
 
@@ -212,12 +210,12 @@ function openEditModal(btn){
     document.getElementById("edit_category").value=btn.dataset.category;
     document.getElementById("edit_difficulty").value=btn.dataset.difficulty;
     document.getElementById("edit_priority").value=btn.dataset.priority;
-    document.getElementById("edit_due_date").value=btn.dataset.due;
+    editCalendar.setDate(btn.dataset.due);
     editModal.style.display="block";
 }
 
 document.querySelectorAll(".edit-btn").forEach(btn=>{
-    btn.addEventListener("click",()=> openEditModal(btn));
+    btn.addEventListener("click",()=>openEditModal(btn));
 });
 
 closeEdit.onclick=()=>editModal.style.display="none";
@@ -227,12 +225,11 @@ window.onclick=e=>{
     if(e.target===editModal) editModal.style.display="none";
 };
 
-/* ---------------------------
-   ADD TASK (AJAX)
----------------------------- */
+/* ADD TASK AJAX */
 document.getElementById("addTaskForm").addEventListener("submit",function(e){
     e.preventDefault();
     const formData=new FormData(this);
+
     fetch("{% url 'add_task' %}",{
         method:"POST",
         body:formData,
@@ -251,12 +248,11 @@ document.getElementById("addTaskForm").addEventListener("submit",function(e){
     });
 });
 
-/* ---------------------------
-   EDIT TASK (AJAX)
----------------------------- */
+/* EDIT TASK AJAX */
 editForm.addEventListener("submit",e=>{
     e.preventDefault();
     const formData=new FormData(editForm);
+
     fetch(editForm.action,{
         method:"POST",
         body:formData,
@@ -265,63 +261,55 @@ editForm.addEventListener("submit",e=>{
     .then(res=>res.json())
     .then(data=>{
         if(data.success){
-            const oldCard = document.querySelector(`.task-card[data-id="${data.task_id}"]`);
-            oldCard.outerHTML = data.task_html;
+            const oldCard=document.querySelector(`.task-card[data-id="${data.task_id}"]`);
+            oldCard.outerHTML=data.task_html;
             editModal.style.display="none";
             refreshActiveCount();
             sortTasksByPriority();
             attachTaskEvents();
-        }else{
-            alert("Failed to update task!");
         }
     });
 });
 
-/* ---------------------------
-   TOGGLE COMPLETE, DELETE, FAVORITE (AJAX)
----------------------------- */
+/* ATTACH INTERACTIONS */
 function attachTaskEvents(){
-
-    /* Reset previous events */
     document.querySelectorAll(".complete-btn, .delete-btn, .edit-btn, .favorite-btn").forEach(btn=>{
-        btn.onclick = null;
+        btn.onclick=null;
     });
 
-    /* EDIT BUTTON */
     document.querySelectorAll(".edit-btn").forEach(btn=>{
-        btn.onclick = e=>{
+        btn.onclick=e=>{
             e.preventDefault();
             openEditModal(btn);
         };
     });
 
-    /* COMPLETE + DELETE */
     document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn=>{
-        btn.onclick = e=>{
+        btn.onclick=e=>{
             e.preventDefault();
-            const taskId = btn.dataset.id;
-            const isComplete = btn.classList.contains("complete-btn");
+            const taskId=btn.dataset.id;
+            const isComplete=btn.classList.contains("complete-btn");
 
-            fetch(isComplete ? `/tasks/toggle_complete/${taskId}/` : `/tasks/delete/${taskId}/`,{
-                method:"POST",
-                headers:{
-                    "X-CSRFToken":getCookie("csrftoken"),
-                    "X-Requested-With":"XMLHttpRequest"
+            fetch(
+                isComplete ? `/tasks/toggle_complete/${taskId}/` : `/tasks/delete/${taskId}/`,
+                {
+                    method:"POST",
+                    headers:{
+                        "X-CSRFToken":getCookie("csrftoken"),
+                        "X-Requested-With":"XMLHttpRequest"
+                    }
                 }
-            })
+            )
             .then(res=>res.json())
             .then(data=>{
                 if(data.success){
                     if(isComplete){
-                        const card   = btn.closest(".task-card");
-                        const circle = card.querySelector(".circle");
-                        const icon   = btn.querySelector("i");
+                        const card=btn.closest(".task-card");
+                        const circle=card.querySelector(".circle");
+                        const icon=btn.querySelector("i");
 
                         if(data.completed){
-                            // move to completed list
                             document.getElementById("completed-tasks").appendChild(card);
-
-                            // ✅ mark visually completed
                             card.classList.add("completed");
                             card.querySelector(".task-title").classList.add("crossed");
                             circle.classList.add("checked");
@@ -329,10 +317,7 @@ function attachTaskEvents(){
                             icon.classList.add("fa-rotate-left");
                             circle.querySelector("i").style.display="block";
                         }else{
-                            // move back to active list
                             document.getElementById("active-tasks").appendChild(card);
-
-                            // 🔄 remove completed visuals
                             card.classList.remove("completed");
                             card.querySelector(".task-title").classList.remove("crossed");
                             circle.classList.remove("checked");
@@ -351,252 +336,243 @@ function attachTaskEvents(){
         };
     });
 
-    /* ⭐ FAVORITE BUTTON */
+    /* FAVORITE */
     document.querySelectorAll(".favorite-btn").forEach(btn=>{
-        btn.onclick = e=>{
+        btn.onclick=e=>{
             e.preventDefault();
-            const taskId = btn.dataset.id;
+            const taskId=btn.dataset.id;
 
-            fetch(`/tasks/toggle_favorite/${taskId}/`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken"),
+            fetch(`/tasks/toggle_favorite/${taskId}/`,{
+                method:"POST",
+                headers:{
+                    "X-CSRFToken":getCookie("csrftoken"),
                     "X-Requested-With":"XMLHttpRequest"
                 }
             })
             .then(res=>res.json())
             .then(data=>{
                 if(data.success){
-                    const icon = btn.querySelector("i");
-
-                    if(data.favorite){
-                        icon.classList.add("starred");
-                    }else{
-                        icon.classList.remove("starred");
-                    }
+                    const icon=btn.querySelector("i");
+                    if(data.favorite) icon.classList.add("starred");
+                    else icon.classList.remove("starred");
                 }
             });
         };
     });
 
-    /* 📋 SUBTASK TOGGLE BUTTON */
+    /* SUBTASK TOGGLE SECTION */
     document.querySelectorAll(".subtask-toggle-btn").forEach(btn=>{
-        btn.onclick = e=>{
+        btn.onclick=e=>{
             e.preventDefault();
-            const taskId = btn.dataset.id;
-            const card = btn.closest(".task-card");
-            const subtasksSection = card.querySelector(".subtasks-section");
-            
-            if(subtasksSection.style.display === "none"){
-                subtasksSection.style.display = "block";
-                // Load subtasks via AJAX
+            const taskId=btn.dataset.id;
+            const card=btn.closest(".task-card");
+            const subtasksSection=card.querySelector(".subtasks-section");
+
+            if(subtasksSection.style.display==="none"){
+                subtasksSection.style.display="block";
                 loadSubtasks(taskId);
-            } else {
-                subtasksSection.style.display = "none";
+            }else{
+                subtasksSection.style.display="none";
             }
         };
     });
 
-    /* ✅ SUBTASK CHECKBOX */
     document.querySelectorAll(".subtask-checkbox input[type='checkbox']").forEach(checkbox=>{
-        checkbox.onchange = e=>{
-            const subtaskId = checkbox.dataset.subtaskId;
-            toggleSubtask(subtaskId, checkbox);
+        checkbox.onchange=e=>{
+            const subtaskId=checkbox.dataset.subtaskId;
+            toggleSubtask(subtaskId,checkbox);
         };
     });
 
-    /* ❌ SUBTASK DELETE */
     document.querySelectorAll(".subtask-delete-btn").forEach(btn=>{
-        btn.onclick = e=>{
+        btn.onclick=e=>{
             e.preventDefault();
-            const subtaskId = btn.dataset.subtaskId;
-            deleteSubtask(subtaskId, btn);
+            const subtaskId=btn.dataset.subtaskId;
+            deleteSubtask(subtaskId,btn);
         };
     });
 
-    /* ➕ ADD SUBTASK */
     document.querySelectorAll(".add-subtask-btn").forEach(btn=>{
-        btn.onclick = e=>{
+        btn.onclick=e=>{
             e.preventDefault();
-            const taskId = btn.dataset.taskId;
-            const input = btn.parentElement.querySelector(".subtask-input");
-            const title = input.value.trim();
-            if(title){
-                addSubtask(taskId, title, input);
-            }
+            const taskId=btn.dataset.taskId;
+            const input=btn.parentElement.querySelector(".subtask-input");
+            const title=input.value.trim();
+            if(title) addSubtask(taskId,title,input);
         };
     });
 
-    /* Enter key for subtask input */
     document.querySelectorAll(".subtask-input").forEach(input=>{
-        input.onkeypress = e=>{
-            if(e.key === "Enter"){
+        input.onkeypress=e=>{
+            if(e.key==="Enter"){
                 e.preventDefault();
-                const taskId = input.dataset.taskId;
-                const title = input.value.trim();
-                if(title){
-                    addSubtask(taskId, title, input);
-                }
+                const taskId=input.dataset.taskId;
+                const title=input.value.trim();
+                if(title) addSubtask(taskId,title,input);
             }
         };
     });
 }
 
-/* ---------------------------
-   SUBTASK FUNCTIONS
----------------------------- */
+/* SUBTASK LOGIC */
 function loadSubtasks(taskId){
-    fetch(`/tasks/${taskId}/subtasks/`, {
-        headers: {"X-Requested-With": "XMLHttpRequest"}
+    fetch(`/tasks/${taskId}/subtasks/`,{
+        headers:{"X-Requested-With":"XMLHttpRequest"}
     })
     .then(res=>res.json())
     .then(data=>{
         if(data.success){
-            updateSubtaskUI(taskId, data.subtasks, data.progress);
+            updateSubtaskUI(taskId,data.subtasks,data.progress);
         }
     });
 }
 
-function addSubtask(taskId, title, inputEl){
-    const formData = new FormData();
-    formData.append("title", title);
-    
-    fetch(`/tasks/${taskId}/subtasks/add/`, {
-        method: "POST",
-        body: formData,
-        headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-            "X-Requested-With": "XMLHttpRequest"
+function addSubtask(taskId,title,inputEl){
+    const formData=new FormData();
+    formData.append("title",title);
+
+    fetch(`/tasks/${taskId}/subtasks/add/`,{
+        method:"POST",
+        body:formData,
+        headers:{
+            "X-CSRFToken":getCookie("csrftoken"),
+            "X-Requested-With":"XMLHttpRequest"
         }
     })
     .then(res=>res.json())
     .then(data=>{
         if(data.success){
-            // Add new subtask to list
-            const list = document.querySelector(`.subtask-list[data-task-id="${taskId}"]`);
-            const li = document.createElement("li");
-            li.className = "subtask-item";
-            li.dataset.subtaskId = data.subtask_id;
-            li.innerHTML = `
+            const list=document.querySelector(`.subtask-list[data-task-id="${taskId}"]`);
+            const li=document.createElement("li");
+
+            li.className="subtask-item";
+            li.dataset.subtaskId=data.subtask_id;
+            li.innerHTML=`
                 <label class="subtask-checkbox">
                     <input type="checkbox" data-subtask-id="${data.subtask_id}">
                     <span class="subtask-title">${data.title}</span>
                 </label>
-                <button class="subtask-delete-btn" data-subtask-id="${data.subtask_id}" title="Delete subtask">
+                <button class="subtask-delete-btn" data-subtask-id="${data.subtask_id}">
                     <i class="fa fa-times"></i>
                 </button>
             `;
+
             list.appendChild(li);
-            inputEl.value = "";
-            
-            // Update progress
-            updateSubtaskProgress(taskId, data.progress);
-            
-            // Re-attach events
+            inputEl.value="";
+
+            updateSubtaskProgress(taskId,data.progress);
             attachTaskEvents();
         }
     });
 }
 
-function toggleSubtask(subtaskId, checkbox){
-    fetch(`/subtasks/${subtaskId}/toggle/`, {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-            "X-Requested-With": "XMLHttpRequest"
+function toggleSubtask(subtaskId,checkbox){
+    fetch(`/subtasks/${subtaskId}/toggle/`,{
+        method:"POST",
+        headers:{
+            "X-CSRFToken":getCookie("csrftoken"),
+            "X-Requested-With":"XMLHttpRequest"
         }
     })
     .then(res=>res.json())
     .then(data=>{
         if(data.success){
-            const li = checkbox.closest(".subtask-item");
-            const titleSpan = li.querySelector(".subtask-title");
-            
+            const li=checkbox.closest(".subtask-item");
+            const title=li.querySelector(".subtask-title");
+
             if(data.completed){
                 li.classList.add("completed");
-                titleSpan.classList.add("crossed");
-            } else {
+                title.classList.add("crossed");
+            }else{
                 li.classList.remove("completed");
-                titleSpan.classList.remove("crossed");
+                title.classList.remove("crossed");
             }
-            
-            // Get taskId from parent
-            const taskCard = checkbox.closest(".task-card");
-            const taskId = taskCard.dataset.id;
-            updateSubtaskProgress(taskId, data.progress);
+
+            const taskCard=checkbox.closest(".task-card");
+            const taskId=taskCard.dataset.id;
+            updateSubtaskProgress(taskId,data.progress);
         }
     });
 }
 
-function deleteSubtask(subtaskId, btn){
-    fetch(`/subtasks/${subtaskId}/delete/`, {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": getCookie("csrftoken"),
-            "X-Requested-With": "XMLHttpRequest"
+function deleteSubtask(subtaskId,btn){
+    fetch(`/subtasks/${subtaskId}/delete/`,{
+        method:"POST",
+        headers:{
+            "X-CSRFToken":getCookie("csrftoken"),
+            "X-Requested-With":"XMLHttpRequest"
         }
     })
     .then(res=>res.json())
     .then(data=>{
         if(data.success){
-            const li = btn.closest(".subtask-item");
-            const taskCard = btn.closest(".task-card");
-            const taskId = taskCard.dataset.id;
-            
+            const li=btn.closest(".subtask-item");
+            const taskId=btn.closest(".task-card").dataset.id;
+
             li.remove();
-            updateSubtaskProgress(taskId, data.progress);
+            updateSubtaskProgress(taskId,data.progress);
         }
     });
 }
 
-function updateSubtaskUI(taskId, subtasks, progress){
-    const list = document.querySelector(`.subtask-list[data-task-id="${taskId}"]`);
-    list.innerHTML = "";
-    
+function updateSubtaskUI(taskId,subtasks,progress){
+    const list=document.querySelector(`.subtask-list[data-task-id="${taskId}"]`);
+    list.innerHTML="";
+
     subtasks.forEach(s=>{
-        const li = document.createElement("li");
-        li.className = `subtask-item ${s.completed ? 'completed' : ''}`;
-        li.dataset.subtaskId = s.id;
-        li.innerHTML = `
+        const li=document.createElement("li");
+        li.className=`subtask-item ${s.completed?'completed':''}`;
+        li.dataset.subtaskId=s.id;
+
+        li.innerHTML=`
             <label class="subtask-checkbox">
-                <input type="checkbox" ${s.completed ? 'checked' : ''} data-subtask-id="${s.id}">
-                <span class="subtask-title ${s.completed ? 'crossed' : ''}">${s.title}</span>
+                <input type="checkbox" ${s.completed?'checked':''} data-subtask-id="${s.id}">
+                <span class="subtask-title ${s.completed?'crossed':''}">${s.title}</span>
             </label>
-            <button class="subtask-delete-btn" data-subtask-id="${s.id}" title="Delete subtask">
+            <button class="subtask-delete-btn" data-subtask-id="${s.id}">
                 <i class="fa fa-times"></i>
             </button>
         `;
+
         list.appendChild(li);
     });
-    
-    updateSubtaskProgress(taskId, progress);
+
+    updateSubtaskProgress(taskId,progress);
     attachTaskEvents();
 }
 
-function updateSubtaskProgress(taskId, progress){
-    // Update progress bar
-    const progressFill = document.querySelector(`.subtask-progress-fill[data-task-id="${taskId}"]`);
-    if(progressFill){
-        progressFill.style.width = `${progress.percent}%`;
-    }
-    
-    // Update progress text
-    const progressText = document.querySelector(`.subtask-progress-text[data-task-id="${taskId}"]`);
-    if(progressText){
-        progressText.textContent = `${progress.completed}/${progress.total} completed`;
-    }
-    
-    // Update count badge in toggle button
-    const countBadge = document.querySelector(`.subtask-count[data-task-id="${taskId}"]`);
-    if(countBadge){
-        countBadge.textContent = progress.total > 0 ? `${progress.completed}/${progress.total}` : "";
-    }
+function updateSubtaskProgress(taskId,progress){
+    const progressFill=document.querySelector(`.subtask-progress-fill[data-task-id="${taskId}"]`);
+    if(progressFill) progressFill.style.width=`${progress.percent}%`;
+
+    const progressText=document.querySelector(`.subtask-progress-text[data-task-id="${taskId}"]`);
+    if(progressText) progressText.textContent=`${progress.completed}/${progress.total} completed`;
+
+    const countBadge=document.querySelector(`.subtask-count[data-task-id="${taskId}"]`);
+    if(countBadge) countBadge.textContent = 
+        progress.total > 0 ? `${progress.completed}/${progress.total}` : "";
 }
 
-// Attach events initially
 attachTaskEvents();
 </script>
 
+<!-- FLATPICKR INITIALIZATION -->
+<script>
+let addCalendar;
+let editCalendar;
+
+document.addEventListener("DOMContentLoaded", function(){
+    addCalendar = flatpickr("#due_date", {
+        minDate: "today",
+        dateFormat: "Y-m-d",
+    });
+
+    editCalendar = flatpickr("#edit_due_date", {
+        minDate: "today",
+        dateFormat: "Y-m-d",
+    });
+});
+</script>
 
 </body>
 </html>
