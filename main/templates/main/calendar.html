@@ -602,9 +602,15 @@
         }
 
         .modal-content {
+<<<<<<< Updated upstream
             background: #fff;
             border-radius: 12px;
             padding: 30px;
+=======
+            background: linear-gradient(135deg, #ffffff 0%, #F9FAFB 100%);
+            border-radius: 18px;
+            padding: 24px;
+>>>>>>> Stashed changes
             width: 90%;
             max-width: 550px;
             max-height: 85vh;
@@ -617,7 +623,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+<<<<<<< Updated upstream
             margin-bottom: 25px;
+=======
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #E0E7EF;
+>>>>>>> Stashed changes
         }
 
         @keyframes slideUp {
@@ -654,11 +666,74 @@
         }
 
         .form-group {
+<<<<<<< Updated upstream
             margin-bottom: 20px;
+=======
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            padding-top: 4px;
+>>>>>>> Stashed changes
         }
 
         .form-label {
             display: block;
+<<<<<<< Updated upstream
+=======
+            margin-bottom: 8px !important;
+            padding-left: 2px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: #374151 !important;
+            letter-spacing: 0.4px;
+            line-height: 1.5;
+            position: relative;
+            z-index: 2;
+            order: 1;
+            text-transform: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Floating label effect */
+        .form-group.has-floating-label {
+            position: relative;
+            padding-top: 0;
+        }
+
+        .form-group.has-floating-label .form-label {
+            position: absolute;
+            top: 13px;
+            left: 16px;
+            margin-bottom: 0;
+            padding-left: 0;
+            background: #ffffff;
+            padding: 0 6px;
+            font-size: 0.9375rem;
+            color: #6B7280;
+            pointer-events: none;
+        }
+
+        .form-group.has-floating-label .form-input:focus~.form-label,
+        .form-group.has-floating-label .form-input:not(:placeholder-shown)~.form-label,
+        .form-group.has-floating-label .form-textarea:focus~.form-label,
+        .form-group.has-floating-label .form-textarea:not(:placeholder-shown)~.form-label,
+        .form-group.has-floating-label .form-select:focus~.form-label,
+        .form-group.has-floating-label .form-select:not([value=""])~.form-label {
+            top: -10px;
+            left: 14px;
+            font-size: 0.75rem;
+            color: #5B9BD5;
+            font-weight: 600;
+        }
+
+        /* Standard label with improved spacing */
+        .form-label::before {
+            content: '';
+            display: block;
+            height: 2px;
+>>>>>>> Stashed changes
             margin-bottom: 8px;
             font-weight: 600;
             color: var(--gray-700);
@@ -692,7 +767,18 @@
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
+<<<<<<< Updated upstream
             gap: 15px;
+=======
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+>>>>>>> Stashed changes
         }
 
         .color-picker-group {
