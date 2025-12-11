@@ -7,9 +7,12 @@
 
         <!-- LEFT SIDE -->
         <div class="left">
-            <div class="circle {% if task.completed %}checked{% endif %}">
+            <div class="circle {% if task.completed %}checked{% endif %}" 
+                data-id="{{ task.id }}">
                 <i class="fa fa-check" {% if not task.completed %}style="display:none"{% endif %}></i>
             </div>
+
+
 
             <div class="title-category">
                 <span class="task-title {% if task.completed %}crossed{% endif %}">
