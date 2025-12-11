@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.utils import timezone
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -17,9 +17,9 @@ from django.db.models import Avg
 
 from .models import (
     LoginAttempt, Task, SubTask,
-    CalendarEvent, TimerSession, UserStreak,
+    CalendarEvent, TimerSession, UserStreak, UserProfile
 )
-from .forms import TaskForm
+from .forms import TaskForm, ProfileAvatarForm
 
 
 logger = logging.getLogger(__name__)
@@ -579,11 +579,22 @@ def edit_event(request, event_id):
         event = get_object_or_404(CalendarEvent, id=event_id, user=request.user)
         data = json.loads(request.body)
 
+        # Date difference calculation for shifting recurring events
+        old_date_obj = event.event_date
+        new_date_str = data.get("event_date")
+        
         event.title = data.get("title", event.title)
         event.description = data.get("description", event.description)
-        event.event_date = data.get("event_date", event.event_date)
+        event.event_date = new_date_str if new_date_str else event.event_date
         event.start_time = parse_time_field(data.get("start_time"))
         event.end_time = parse_time_field(data.get("end_time"))
+
+        # Calculate delta if date changed
+        days_diff = 0
+        if new_date_str:
+            new_date_obj = datetime.strptime(new_date_str, "%Y-%m-%d").date()
+            if old_date_obj and new_date_obj != old_date_obj:
+                days_diff = (new_date_obj - old_date_obj).days
 
         old_category = event.category
         new_category = data.get("category", event.category)
@@ -609,9 +620,14 @@ def edit_event(request, event_id):
                 inst.start_time = event.start_time
                 inst.end_time = event.end_time
                 inst.category = event.category
-                inst.color = inst.get_category_color()
+                inst.color = event.color
                 inst.reminder_enabled = event.reminder_enabled
                 inst.reminder_minutes_before = event.reminder_minutes_before
+                
+                # Apply date shift
+                if days_diff != 0:
+                    inst.event_date = inst.event_date + timedelta(days=days_diff)
+                
                 inst.save()
 
         elif event.parent_event:
@@ -621,20 +637,30 @@ def edit_event(request, event_id):
             parent.start_time = event.start_time
             parent.end_time = event.end_time
             parent.category = event.category
-            parent.color = parent.get_category_color()
+            parent.color = event.color
             parent.reminder_enabled = event.reminder_enabled
             parent.reminder_minutes_before = event.reminder_minutes_before
+            
+            # Apply date shift to parent
+            if days_diff != 0:
+                parent.event_date = parent.event_date + timedelta(days=days_diff)
+            
             parent.save()
 
-            for inst in parent.recurring_instances.all():
+            for inst in parent.recurring_instances.exclude(id=event.id):
                 inst.title = event.title
                 inst.description = event.description
                 inst.start_time = event.start_time
                 inst.end_time = event.end_time
                 inst.category = event.category
-                inst.color = inst.get_category_color()
+                inst.color = event.color
                 inst.reminder_enabled = event.reminder_enabled
                 inst.reminder_minutes_before = event.reminder_minutes_before
+                
+                # Apply date shift to siblings
+                if days_diff != 0:
+                    inst.event_date = inst.event_date + timedelta(days=days_diff)
+
                 inst.save()
 
         event.refresh_from_db()
@@ -788,3 +814,105 @@ def get_subtasks(request, task_id):
         })
 
     return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+# ============================================================
+# PROFILE & SETTINGS
+# ============================================================
+@login_required
+def profile_view(request):
+    completed_tasks_count = request.user.tasks.filter(completed=True).count()
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    return render(request, "main/profile.html", {
+        "completed_tasks_count": completed_tasks_count,
+        "avatar_form": ProfileAvatarForm(instance=profile)
+    })
+
+@login_required
+@require_http_methods(["POST"])
+def update_avatar(request):
+    try:
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        form = ProfileAvatarForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"success": True, "avatar_url": profile.avatar.url})
+        return JsonResponse({"success": False, "error": "Invalid form data"})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_profile(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
+
+        user.first_name = data.get("first_name", user.first_name)
+        user.last_name = data.get("last_name", user.last_name)
+        email = data.get("email", user.email)
+
+        # Basic email validation
+        if email != user.email:
+            if User.objects.filter(email=email).exclude(pk=user.pk).exists():
+                return JsonResponse({"success": False, "error": "Email already in use"})
+            user.email = email
+            user.username = email  # Keeping username same as email
+
+        user.save()
+        return JsonResponse({"success": True, "message": "Profile updated successfully"})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
+
+
+@login_required
+def settings_view(request):
+    return render(request, "main/settings.html")
+
+
+@login_required
+@require_http_methods(["POST"])
+def change_password(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        
+        old_password = data.get("old_password")
+        new_password = data.get("new_password")
+        confirm_password = data.get("confirm_password")
+
+        if not user.check_password(old_password):
+            return JsonResponse({"success": False, "error": "Incorrect current password"})
+
+        if new_password != confirm_password:
+            return JsonResponse({"success": False, "error": "New passwords do not match"})
+
+        # Validate password strength (reuse regex from register)
+        if not re.search(r'[A-Z]', new_password) or not re.search(r'[!@#$%^&*()_+{}\[\]:;<>,.?~\-]', new_password):
+             return JsonResponse({
+                "success": False, 
+                "error": "Password must contain at least 1 uppercase letter and 1 special character"
+            })
+
+        user.set_password(new_password)
+        user.save()
+        update_session_auth_hash(request, user)  # Keep user logged in
+
+        return JsonResponse({"success": True, "message": "Password changed successfully"})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})
+
+
+# ============================================================
+# LEGAL PAGES
+# ============================================================
+def privacy_policy_view(request):
+    return render(request, "main/privacy.html")
+
+
+def terms_view(request):
+    return render(request, "main/terms.html")
+

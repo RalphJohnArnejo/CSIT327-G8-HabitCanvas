@@ -1,4 +1,6 @@
-from django.urls import path
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from .views import (
     landing_view, register_view, login_view, dashboard_view, logout_view,
@@ -6,7 +8,10 @@ from .views import (
     timer_view, save_session, get_timer_stats,
     calendar_view, get_events, add_event, edit_event, delete_event, reschedule_event,
     # Subtask views
-    add_subtask, toggle_subtask, delete_subtask, get_subtasks
+    add_subtask, toggle_subtask, delete_subtask, get_subtasks,
+    # Profile & Settings views
+    profile_view, update_profile, settings_view, change_password,
+    privacy_policy_view, terms_view, update_avatar
 )
 
 urlpatterns = [
@@ -51,4 +56,17 @@ urlpatterns = [
     path("password_reset/done/", auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
     path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
+    
+    # Profile & Settings
+    path("profile/", profile_view, name="profile"),
+    path("profile/update/", update_profile, name="update_profile"),
+    path("profile/update_avatar/", update_avatar, name="update_avatar"),
+    path("settings/", settings_view, name="settings"),
+    path("settings/change_password/", change_password, name="change_password"),
+    path("privacy/", privacy_policy_view, name="privacy_policy"),
+    path("terms/", terms_view, name="terms"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

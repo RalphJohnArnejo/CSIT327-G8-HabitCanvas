@@ -18,211 +18,138 @@
 
 <body>
 
-<!-- NAVIGATION -->
-<header class="top-nav">
-    <div class="left">
-        <img src="{% static 'habitcanvass.jpg' %}" class="logo-img">
-        <span class="logo-text">HabitCanvas</span>
-    </div>
-
-    <div class="nav-center">
-        <a href="#" class="nav-btn active"><i class="fa fa-list"></i> Tasks</a>
-        <a href="/timer" class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
-        <a href="/calendar" class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
-    </div>
-
-    <div class="right">
-        <a href="#" class="btn-logout" onclick="openLogoutModal(event)">Logout</a>
-    </div>
-</header>
-
-<!-- PAGE CONTENT -->
-<div class="page-container">
-    <div class="header-row">
-        <div>
-            <h2>My Tasks</h2>
-            <p class="subtext">
-                <span id="activeTaskCount">{{ active_count }}</span> active tasks
-            </p>
+    <!-- NAVIGATION -->
+    <header class="top-nav">
+        <div class="left">
+            <img src="{% static 'habitcanvass.jpg' %}" class="logo-img">
+            <span class="logo-text">HabitCanvas</span>
         </div>
-        <a href="#" class="btn-primary" id="openAddBtn">
-            <i class="fa fa-plus"></i> Add new task
-        </a>
-    </div>
 
-    <!-- FILTERS -->
-    <div class="filters">
-        <form method="GET" id="filterForm">
-            <select name="sort" onchange="this.form.submit()">
-                <option value="default" {% if request.GET.sort == 'default' or not request.GET.sort %}selected{% endif %}>Default</option>
-                <option value="priority" {% if request.GET.sort == 'priority' %}selected{% endif %}>Priority</option>
-            </select>
+        <div class="nav-center">
+            <a href="#" class="nav-btn active"><i class="fa fa-list"></i> Tasks</a>
+            <a href="/timer" class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
+            <a href="/calendar" class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
+            <a href="/profile" class="nav-btn"><i class="fa fa-user"></i> Profile</a>
+            <a href="/settings" class="nav-btn"><i class="fa fa-cog"></i> Settings</a>
+        </div>
 
-            <select name="category" onchange="this.form.submit()">
-                <option value="" {% if not request.GET.category %}selected{% endif %}>All Categories</option>
-                <option value="School" {% if request.GET.category == 'School' %}selected{% endif %}>School</option>
-                <option value="Personal" {% if request.GET.category == 'Personal' %}selected{% endif %}>Personal</option>
-                <option value="Work" {% if request.GET.category == 'Work' %}selected{% endif %}>Work</option>
-            </select>
+        <div class="right">
+            <a href="#" class="btn-logout" onclick="openLogoutModal(event)">Logout</a>
+        </div>
+    </header>
 
-            <select name="difficulty" onchange="this.form.submit()">
-                <option value="" {% if not request.GET.difficulty %}selected{% endif %}>All Difficulty</option>
-                <option value="Easy" {% if request.GET.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
-                <option value="Medium" {% if request.GET.difficulty == 'Medium' %}selected{% endif %}>Medium</option>
-                <option value="Hard" {% if request.GET.difficulty == 'Hard' %}selected{% endif %}>Hard</option>
-            </select>
-        </form>
-    </div>
+    <!-- PAGE CONTENT -->
+    <div class="page-container">
+        <div class="header-row">
+            <div>
+                <h2>My Tasks</h2>
+                <p class="subtext">
+                    <span id="activeTaskCount">{{ active_count }}</span> active tasks
+                </p>
+            </div>
+            <a href="#" class="btn-primary" id="openAddBtn">
+                <i class="fa fa-plus"></i> Add new task
+            </a>
+        </div>
 
-    <!-- TASK LIST -->
-    <div class="task-list">
-        <div id="active-tasks">
-            {% for task in tasks %}
+        <!-- FILTERS -->
+        <div class="filters">
+            <form method="GET" id="filterForm">
+                <select name="sort" onchange="this.form.submit()">
+                    <option value="default" {% if request.GET.sort == 'default' or not request.GET.sort %}selected{% endif %}>Default</option>
+                    <option value="priority" {% if request.GET.sort == 'priority' %}selected{% endif %}>Priority</option>
+                </select>
+
+                <select name="category" onchange="this.form.submit()">
+                    <option value="" {% if not request.GET.category %}selected{% endif %}>All Categories</option>
+                    <option value="School" {% if request.GET.category == 'School' %}selected{% endif %}>School</option>
+                    <option value="Personal" {% if request.GET.category == 'Personal' %}selected{% endif %}>Personal
+                    </option>
+                    <option value="Work" {% if request.GET.category == 'Work' %}selected{% endif %}>Work</option>
+                </select>
+
+                <select name="difficulty" onchange="this.form.submit()">
+                    <option value="" {% if not request.GET.difficulty %}selected{% endif %}>All Difficulty</option>
+                    <option value="Easy" {% if request.GET.difficulty == 'Easy' %}selected{% endif %}>Easy</option>
+                    <option value="Medium" {% if request.GET.difficulty == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="Hard" {% if request.GET.difficulty == 'Hard' %}selected{% endif %}>Hard</option>
+                </select>
+            </form>
+        </div>
+
+        <!-- TASK LIST -->
+        <div class="task-list">
+            <div id="active-tasks">
+                {% for task in tasks %}
                 {% if not task.completed %}
-                    {% include "main/partials/task_card.html" with task=task %}
+                {% include "main/partials/task_card.html" with task=task %}
                 {% endif %}
-            {% endfor %}
-        </div>
+                {% endfor %}
+            </div>
 
-        <h3 class="completed-title">Completed Tasks</h3>
-        <div id="completed-tasks">
-            {% for task in tasks %}
+            <h3 class="completed-title">Completed Tasks</h3>
+            <div id="completed-tasks">
+                {% for task in tasks %}
                 {% if task.completed %}
-                    {% include "main/partials/task_card.html" with task=task %}
+                {% include "main/partials/task_card.html" with task=task %}
                 {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-</div>
-
-<!-- ADD TASK MODAL -->
-<div id="addModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Add New Task</h2>
-
-        <form id="addTaskForm" method="POST" action="{% url 'add_task' %}">
-            {% csrf_token %}
-
-            <label>Task Title</label>
-            <input type="text" name="title" required>
-
-            <label>Category</label>
-            <select name="category" required>
-                <option value="School">School</option>
-                <option value="Personal">Personal</option>
-                <option value="Work">Work</option>
-            </select>
-
-            <label>Difficulty</label>
-            <select name="difficulty" required>
-                <option value="Easy">Easy</option>
-                <option value="Medium">Medium</option>
-                <option value="Hard">Hard</option>
-            </select>
-
-            <label>Due Date</label>
-            <input type="text" name="due_date" id="due_date" class="flatpickr">
-
-            <label>Priority</label>
-            <select name="priority">
-                <option value="0">Low</option>
-                <option value="1">Medium</option>
-                <option value="2">High</option>
-            </select>
-
-            <button class="btn-primary">Add Task</button>
-        </form>
-    </div>
-</div>
-
-<!-- EDIT MODAL -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Edit Task</h2>
-
-        <form id="editTaskForm" method="POST">{% csrf_token %}
-            <label>Task Title</label>
-            <input type="text" id="edit_title" name="title" required>
-
-            <label>Category</label>
-            <select id="edit_category" name="category" required>
-                <option value="School">School</option>
-                <option value="Personal">Personal</option>
-                <option value="Work">Work</option>
-            </select>
-
-            <label>Difficulty</label>
-            <select id="edit_difficulty" name="difficulty" required>
-                <option value="Easy">Easy</option>
-                <option value="Medium">Medium</option>
-                <option value="Hard">Hard</option>
-            </select>
-
-            <label>Due Date</label>
-            <input type="text" id="edit_due_date" name="due_date" class="flatpickr">
-
-            <label>Priority</label>
-            <select id="edit_priority" name="priority">
-                <option value="0">Low</option>
-                <option value="1">Medium</option>
-                <option value="2">High</option>
-            </select>
-
-            <button class="btn-primary">Save Changes</button>
-        </form>
-    </div>
-</div>
-
-<!-- Shared Logout Confirmation Modal -->
-<div class="modal" id="sharedLogoutModal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="logout-modal-header">
-            <h2 class="logout-modal-title">Goodbye 👋</h2>
-            <p class="logout-modal-subtitle">Are you sure you want to log out?</p>
-        </div>
-        <div class="logout-modal-body">
-            <div class="user-avatar">
-                <i class="fa fa-user-circle"></i>
-            </div>
-            <p class="logout-user-label">Logged in as</p>
-            <p class="logout-user-email">{{ user.email }}</p>
-            <div class="logout-info-box">
-                <p>You will be signed out of your account and redirected to the login page</p>
+                {% endfor %}
             </div>
         </div>
-        <div class="modal-footer" style="flex-direction: column; gap: 12px;">
-            <button type="button" class="btn btn-danger logout-btn-confirm" onclick="confirmLogout()">
-                Logout <i class="fa fa-sign-out-alt"></i>
-            </button>
-            <button type="button" class="btn btn-cancel logout-btn-stay" onclick="closeLogoutModal()">Stay logged in</button>
+    </div>
+
+    <!-- ADD TASK MODAL -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add New Task</h2>
+
+            <form id="addTaskForm" method="POST" action="{% url 'add_task' %}">
+                {% csrf_token %}
+
+                <label>Task Title</label>
+                <input type="text" name="title" required>
+
+                <label>Category</label>
+                <select name="category" required>
+                    <option value="School">School</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Work">Work</option>
+                </select>
+
+                <label>Difficulty</label>
+                <select name="difficulty" required>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+
+                <label>Due Date</label>
+                <input type="text" name="due_date" id="due_date" class="flatpickr">
+
+                <label>Priority</label>
+                <select name="priority">
+                    <option value="0">Low</option>
+                    <option value="1">Medium</option>
+                    <option value="2">High</option>
+                </select>
+
+                <button class="btn-primary">Add Task</button>
+            </form>
         </div>
     </div>
-</div>
 
-<style>
-    /* ===== Shared Logout Modal Styles ===== */
-    #sharedLogoutModal {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        justify-content: center;
-        align-items: center;
-    }
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Task</h2>
 
-    #sharedLogoutModal.active,
-    #sharedLogoutModal[style*="display: block"] {
-        display: flex !important;
-    }
+            <form id="editTaskForm" method="POST">{% csrf_token %}
+                <label>Task Title</label>
+                <input type="text" id="edit_title" name="title" required>
 
+<<<<<<< HEAD
     #sharedLogoutModal .modal-content {
         background: linear-gradient(135deg, #F8FBFD 0%, #E8F4F8 50%, #FDF8F3 100%);
         margin: auto;
@@ -234,18 +161,218 @@
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         animation: modalSlideIn 0.3s ease-out;
     }
+=======
+                <label>Category</label>
+                <select id="edit_category" name="category" required>
+                    <option value="School">School</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Work">Work</option>
+                </select>
+>>>>>>> feature/final
 
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
+                <label>Difficulty</label>
+                <select id="edit_difficulty" name="difficulty" required>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+
+                <label>Due Date</label>
+                <input type="text" id="edit_due_date" name="due_date" class="flatpickr">
+
+                <label>Priority</label>
+                <select id="edit_priority" name="priority">
+                    <option value="0">Low</option>
+                    <option value="1">Medium</option>
+                    <option value="2">High</option>
+                </select>
+
+                <button class="btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shared Logout Confirmation Modal -->
+    <div class="modal" id="sharedLogoutModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="logout-modal-header">
+                <h2 class="logout-modal-title">Goodbye 👋</h2>
+                <p class="logout-modal-subtitle">Are you sure you want to log out?</p>
+            </div>
+            <div class="logout-modal-body">
+                <div class="user-avatar">
+                    <i class="fa fa-user-circle"></i>
+                </div>
+                <p class="logout-user-label">Logged in as</p>
+                <p class="logout-user-email">{{ user.email }}</p>
+                <div class="logout-info-box">
+                    <p>You will be signed out of your account and redirected to the login page</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="flex-direction: column; gap: 12px;">
+                <button type="button" class="btn btn-danger logout-btn-confirm" onclick="confirmLogout()">
+                    Logout <i class="fa fa-sign-out-alt"></i>
+                </button>
+                <button type="button" class="btn btn-cancel logout-btn-stay" onclick="closeLogoutModal()">Stay logged
+                    in</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* ===== Shared Logout Modal Styles ===== */
+        #sharedLogoutModal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
         }
-        to {
-            opacity: 1;
+
+        #sharedLogoutModal.active,
+        #sharedLogoutModal[style*="display: block"] {
+            display: flex !important;
+        }
+
+        #sharedLogoutModal .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+            margin: auto;
+            padding: 40px 35px;
+            border-radius: 18px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logout-modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logout-modal-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: #1a1a1a;
+            letter-spacing: -0.5px;
+        }
+
+        .logout-modal-subtitle {
+            font-size: 17px;
+            color: #666;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .logout-modal-body {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .user-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            color: #1976d2;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+        }
+
+        .logout-user-label {
+            font-size: 14px;
+            color: #888;
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .logout-user-email {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1976d2;
+            margin: 0 0 25px 0;
+        }
+
+        .logout-info-box {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #ffb74d;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0 30px 0;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+        }
+
+        .logout-info-box p {
+            margin: 0;
+            font-size: 15px;
+            color: #5d4037;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        #sharedLogoutModal .modal-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .logout-btn-confirm {
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .logout-btn-confirm:hover {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(229, 57, 53, 0.4);
+        }
+
+        .logout-btn-confirm:active {
             transform: translateY(0);
         }
-    }
 
+<<<<<<< HEAD
     .logout-modal-header {
         text-align: center;
         margin-bottom: 25px;
@@ -464,20 +591,133 @@ function addSubtask(taskId, title, inputEl){
         headers:{
             "X-CSRFToken": getCookie("csrftoken"),
             "X-Requested-With": "XMLHttpRequest"
+=======
+        .logout-btn-stay {
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #424242;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+>>>>>>> feature/final
         }
-    })
-    .then(r => r.json())
-    .then(data =>{
-        if (!data.success) return;
 
-        const list = document.querySelector(`.subtask-list[data-task-id="${taskId}"]`);
-        if (!list) return;
+        .logout-btn-stay:hover {
+            background: #f5f5f5;
+            border-color: #bdbdbd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
 
-        const li = document.createElement("li");
-        li.className = "subtask-item";
-        li.dataset.subtaskId = data.subtask_id;
+        .logout-btn-stay:active {
+            transform: translateY(0);
+        }
+    </style>
 
-        li.innerHTML = `
+    <script>
+
+        /* ----------------------
+           COOKIE HELPER
+        ---------------------- */
+        function getCookie(name) {
+            let value = null;
+            document.cookie.split(";").forEach(c => {
+                c = c.trim();
+                if (c.startsWith(name + "="))
+                    value = decodeURIComponent(c.substring(name.length + 1));
+            });
+            return value;
+        }
+
+        /* ----------------------
+           COUNTERS + SORT
+        ---------------------- */
+        function refreshActiveCount() {
+            const count = document.querySelectorAll("#active-tasks .task-card").length;
+            document.getElementById("activeTaskCount").textContent = count;
+        }
+
+        function sortTasksByPriority() {
+            const container = document.getElementById("active-tasks");
+            if (!container) return;
+
+            [...container.children]
+                .sort((a, b) => Number(b.dataset.priority) - Number(a.dataset.priority))
+                .forEach(x => container.appendChild(x));
+        }
+
+        /* ----------------------
+           FLATPICKR
+        ---------------------- */
+        let addCalendar, editCalendar;
+
+        document.addEventListener("DOMContentLoaded", () => {
+
+            addCalendar = flatpickr("#due_date", {
+                minDate: "today",
+                dateFormat: "Y-m-d"
+            });
+
+            editCalendar = flatpickr("#edit_due_date", {
+                minDate: "today",
+                dateFormat: "Y-m-d"
+            });
+
+            attachTaskEvents();
+            refreshActiveCount();
+            sortTasksByPriority();
+        });
+
+        /* ----------------------
+           EDIT MODAL
+        ---------------------- */
+        function openEditModal(btn) {
+            const id = btn.dataset.id;
+
+            document.getElementById("edit_title").value = btn.dataset.title;
+            document.getElementById("edit_category").value = btn.dataset.category;
+            document.getElementById("edit_difficulty").value = btn.dataset.difficulty;
+            document.getElementById("edit_priority").value = btn.dataset.priority;
+
+            if (editCalendar)
+                editCalendar.setDate(btn.dataset.due || "");
+
+            document.getElementById("editTaskForm").action = `/tasks/edit/${id}/`;
+            document.getElementById("editModal").style.display = "block";
+        }
+
+        /* ----------------------
+           SUBTASK FUNCTIONS
+        ---------------------- */
+        function addSubtask(taskId, title, inputEl) {
+            const fd = new FormData();
+            fd.append("title", title);
+
+            fetch(`/tasks/${taskId}/subtasks/add/`, {
+                method: "POST",
+                body: fd,
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) return;
+
+                    const list = document.querySelector(`.subtask-list[data-task-id="${taskId}"]`);
+                    if (!list) return;
+
+                    const li = document.createElement("li");
+                    li.className = "subtask-item";
+                    li.dataset.subtaskId = data.subtask_id;
+
+                    li.innerHTML = `
             <label class="subtask-checkbox">
                 <input type="checkbox" data-subtask-id="${data.subtask_id}">
                 <span class="subtask-title">${data.title}</span>
@@ -487,30 +727,19 @@ function addSubtask(taskId, title, inputEl){
             </button>
         `;
 
-        list.appendChild(li);
+                    list.appendChild(li);
 
-        li.querySelector(".subtask-delete-btn").onclick = () =>
-            deleteSubtask(data.subtask_id, li.querySelector(".subtask-delete-btn"));
+                    li.querySelector(".subtask-delete-btn").onclick = () =>
+                        deleteSubtask(data.subtask_id, li.querySelector(".subtask-delete-btn"));
 
-        inputEl.value = "";
-        updateSubtaskProgress(taskId, data.progress);
+                    inputEl.value = "";
+                    updateSubtaskProgress(taskId, data.progress);
 
-        attachTaskEvents(); // rebind new events
-    });
-}
-
-function toggleSubtask(subtaskId, checkbox){
-    fetch(`/subtasks/${subtaskId}/toggle/`, {
-        method: "POST",
-        headers:{
-            "X-CSRFToken": getCookie("csrftoken"),
-            "X-Requested-With": "XMLHttpRequest"
+                    attachTaskEvents(); // rebind new events
+                });
         }
-    })
-    .then(r=>r.json())
-    .then(data=>{
-        if (!data.success) return;
 
+<<<<<<< HEAD
         const li = checkbox.closest(".subtask-item");
         li.classList.toggle("completed", data.completed);
         li.querySelector(".subtask-title").classList.toggle("crossed", data.completed);
@@ -933,36 +1162,335 @@ document.getElementById("editTaskForm").onsubmit = function(e){
             location.reload();
         } else {
             alert("Error updating task.");
+=======
+        function toggleSubtask(subtaskId, checkbox) {
+            fetch(`/subtasks/${subtaskId}/toggle/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) return;
+
+                    const li = checkbox.closest(".subtask-item");
+                    li.classList.toggle("completed", data.completed);
+                    li.querySelector(".subtask-title").classList.toggle("crossed", data.completed);
+
+                    updateSubtaskProgress(
+                        checkbox.closest(".task-card").dataset.id,
+                        data.progress
+                    );
+                });
+>>>>>>> feature/final
         }
-    });
-};
 
-/* ----------------------
-   SHARED LOGOUT FUNCTIONS
----------------------- */
-function openLogoutModal(event) {
-    if (event) event.preventDefault();
-    document.getElementById('sharedLogoutModal').style.display = 'block';
-}
+        function deleteSubtask(subtaskId, btn) {
+            fetch(`/subtasks/${subtaskId}/delete/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
 
-function closeLogoutModal() {
-    document.getElementById('sharedLogoutModal').style.display = 'none';
-}
+                    const li = btn.closest(".subtask-item");
+                    const taskId = btn.closest(".task-card").dataset.id;
 
-function confirmLogout() {
-    window.location.href = '{% url "logout" %}';
-}
+                    li.remove();
+                    updateSubtaskProgress(taskId, data.progress);
+                });
+        }
 
-// Close modal when clicking outside
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById('sharedLogoutModal');
-    if (event.target === modal) {
-        closeLogoutModal();
-    }
-});
 
-</script>
+        function updateSubtaskProgress(taskId, progress) {
+            const bar = document.querySelector(`.subtask-progress-fill[data-task-id="${taskId}"]`);
+            const text = document.querySelector(`.subtask-progress-text[data-task-id="${taskId}"]`);
+            const badge = document.querySelector(`.subtask-count[data-task-id="${taskId}"]`);
+
+            if (bar) bar.style.width = `${progress.percent}%`;
+            if (text) text.textContent = `${progress.completed}/${progress.total} completed`;
+            if (badge) badge.textContent = `${progress.completed}/${progress.total}`;
+        }
+
+        /* ----------------------
+           MAIN EVENT BINDER
+        ---------------------- */
+        function attachTaskEvents() {
+
+            /* EDIT */
+            document.querySelectorAll(".edit-btn").forEach(btn => {
+                btn.onclick = e => {
+                    e.preventDefault();
+                    openEditModal(btn);
+                };
+            });
+
+            /* COMPLETE + DELETE */
+            document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn => {
+                btn.onclick = e => {
+                    e.preventDefault();
+
+                    const id = btn.dataset.id;
+                    const complete = btn.classList.contains("complete-btn");
+
+                    fetch(complete ? `/tasks/toggle_complete/${id}/` : `/tasks/delete/${id}/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCookie("csrftoken"),
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (!data.success) return;
+
+                            const card = document.querySelector(`.task-card[data-id="${id}"]`);
+
+                            if (complete) {
+
+                                /* 🔵 Get the circle + check icon */
+                                const circle = card.querySelector(".circle");
+                                const checkIcon = circle.querySelector("i");
+
+                                if (data.completed) {
+                                    // Move to completed section
+                                    document.getElementById("completed-tasks").appendChild(card);
+                                    card.classList.add("completed");
+                                    card.querySelector(".task-title").classList.add("crossed");
+
+                                    // 🟢 Turn circle green with check
+                                    circle.classList.add("checked");
+                                    checkIcon.style.display = "block";
+
+                                    btn.querySelector("i").classList.replace("fa-check", "fa-undo");
+
+                                } else {
+                                    // Move back to active
+                                    document.getElementById("active-tasks").appendChild(card);
+                                    card.classList.remove("completed");
+                                    card.querySelector(".task-title").classList.remove("crossed");
+
+                                    // 🔵 Reset circle back to blue, remove check
+                                    circle.classList.remove("checked");
+                                    checkIcon.style.display = "none";
+
+                                    btn.querySelector("i").classList.replace("fa-undo", "fa-check");
+                                    sortTasksByPriority();
+                                }
+
+                                refreshActiveCount();
+
+                            } else {
+                                card.remove();
+                                refreshActiveCount();
+                            }
+                        });
+                };
+            });
+
+
+            /* FAVORITE */
+            document.querySelectorAll(".favorite-btn").forEach(btn => {
+                btn.onclick = e => {
+                    e.preventDefault();
+
+                    fetch(`/tasks/toggle_favorite/${btn.dataset.id}/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCookie("csrftoken"),
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                btn.querySelector("i").classList.toggle("starred", data.favorite);
+                            }
+                        });
+                };
+            });
+
+            /* SUBTASK TOGGLE */
+            document.querySelectorAll(".subtask-toggle-btn").forEach(btn => {
+                btn.onclick = e => {
+                    e.preventDefault();
+
+                    const section = btn.closest(".task-card").querySelector(".subtasks-section");
+                    section.style.display = section.style.display === "none" ? "block" : "none";
+                };
+            });
+
+            /* ADD SUBTASK */
+            document.querySelectorAll(".add-subtask-btn").forEach(btn => {
+                btn.onclick = () => {
+                    const input = btn.parentElement.querySelector(".subtask-input");
+                    const text = input.value.trim();
+                    if (text) addSubtask(btn.dataset.taskId, text, input);
+                };
+            });
+
+            /* ENTER → ADD SUBTASK */
+            document.querySelectorAll(".subtask-input").forEach(input => {
+                input.onkeypress = e => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        const text = input.value.trim();
+                        if (text) addSubtask(input.dataset.taskId, text, input);
+                    }
+                };
+            });
+
+            /* CHECK SUBTASK */
+            document.querySelectorAll(".subtask-checkbox input").forEach(box => {
+                box.onchange = () => toggleSubtask(box.dataset.subtaskId, box);
+            });
+
+            /* DELETE SUBTASK */
+            document.querySelectorAll(".subtask-delete-btn").forEach(btn => {
+                btn.onclick = e => {
+                    e.preventDefault();
+                    deleteSubtask(btn.dataset.subtaskId, btn);
+                };
+            });
+
+            /* CLICKABLE CIRCLE TO TOGGLE COMPLETE */
+            document.querySelectorAll(".circle").forEach(circle => {
+
+                circle.onclick = e => {
+                    e.preventDefault();
+
+                    const id = circle.dataset.id;
+
+                    fetch(`/tasks/toggle_complete/${id}/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCookie("csrftoken"),
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (!data.success) return;
+
+                            const card = document.querySelector(`.task-card[data-id="${id}"]`);
+                            const checkIcon = circle.querySelector("i");
+
+                            // Find the COMPLETE button inside this card
+                            const completeBtn = card.querySelector(".complete-btn i");
+
+                            if (data.completed) {
+                                // Move card to completed section
+                                document.getElementById("completed-tasks").appendChild(card);
+                                card.classList.add("completed");
+                                card.querySelector(".task-title").classList.add("crossed");
+
+                                // Change circle → green + show check
+                                circle.classList.add("checked");
+                                checkIcon.style.display = "block";
+
+                                // Change complete button → undo icon
+                                completeBtn.classList.replace("fa-check", "fa-undo");
+
+                            } else {
+                                // Move card back to active
+                                document.getElementById("active-tasks").appendChild(card);
+                                card.classList.remove("completed");
+                                card.querySelector(".task-title").classList.remove("crossed");
+
+                                // Reset circle → blue + hide check
+                                circle.classList.remove("checked");
+                                checkIcon.style.display = "none";
+
+                                // Change complete button → check icon
+                                completeBtn.classList.replace("fa-undo", "fa-check");
+
+                                sortTasksByPriority();
+                            }
+
+                            refreshActiveCount();
+                        });
+                };
+            });
+
+
+
+        }
+
+        /* ----------------------
+           MODALS
+        ---------------------- */
+        document.getElementById("openAddBtn").onclick = e => {
+            e.preventDefault();
+            document.getElementById("addModal").style.display = "block";
+        };
+
+        document.querySelectorAll(".modal .close").forEach(btn => {
+            btn.onclick = () => btn.closest(".modal").style.display = "none";
+        });
+
+
+        window.onclick = e => {
+            if (e.target.classList.contains("modal"))
+                e.target.style.display = "none";
+        };
+
+        /* ----------------------
+           EDIT FORM (AJAX)
+        ---------------------- */
+        document.getElementById("editTaskForm").onsubmit = function (e) {
+            e.preventDefault();
+
+            fetch(this.action, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: new FormData(this)
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert("Error updating task.");
+                    }
+                });
+        };
+
+        /* ----------------------
+           SHARED LOGOUT FUNCTIONS
+        ---------------------- */
+        function openLogoutModal(event) {
+            if (event) event.preventDefault();
+            document.getElementById('sharedLogoutModal').style.display = 'block';
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('sharedLogoutModal').style.display = 'none';
+        }
+
+        function confirmLogout() {
+            window.location.href = '{% url "logout" %}';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function (event) {
+            const modal = document.getElementById('sharedLogoutModal');
+            if (event.target === modal) {
+                closeLogoutModal();
+            }
+        });
+
+    </script>
 
 
 </body>
+
 </html>

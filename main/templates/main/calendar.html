@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <style>
         /* ===== CSS Variables ===== */
         :root {
@@ -328,14 +332,14 @@
             margin: 0;
             min-height: 44px;
             height: 44px;
-            
+
             /* FIXED LAYOUT - DO NOT MODIFY */
             text-align: center;
             box-sizing: border-box;
             display: flex;
             align-items: center;
             justify-content: center;
-            
+
             /* VISUAL STYLES - Can vary by state */
             background: linear-gradient(135deg, #F8FBFD 0%, var(--cream) 100%);
             font-weight: 700;
@@ -345,7 +349,7 @@
             letter-spacing: 0.5px;
             transition: background 0.3s ease, color 0.3s ease;
         }
-        
+
         /* Today/selected header state - ONLY changes background and text color */
         /* NO padding, NO margin, NO height changes allowed */
         .day-header.today {
@@ -362,12 +366,12 @@
             height: 120px;
             padding: 8px;
             margin: 0;
-            
+
             /* FIXED LAYOUT - DO NOT MODIFY */
             position: relative;
             cursor: pointer;
             box-sizing: border-box;
-            
+
             /* VISUAL STYLES - Can vary by state */
             background: #fff;
             transition: background 0.3s ease;
@@ -689,30 +693,30 @@
         .modal-content {
             background: linear-gradient(135deg, #ffffff 0%, #F9FAFB 100%);
             border-radius: 18px;
-            padding: 36px;
+            padding: 24px;
             width: 90%;
-            max-width: 620px;
+            max-width: 500px;
             max-height: 88vh;
             overflow-y: auto;
             box-shadow: 0 16px 56px rgba(93, 78, 60, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
             border: 1px solid #E0E7EF;
             animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .modal-content::-webkit-scrollbar {
             width: 8px;
         }
-        
+
         .modal-content::-webkit-scrollbar-track {
             background: #F3F4F6;
             border-radius: 10px;
         }
-        
+
         .modal-content::-webkit-scrollbar-thumb {
             background: #C5D9E8;
             border-radius: 10px;
         }
-        
+
         .modal-content::-webkit-scrollbar-thumb:hover {
             background: #B8D4E8;
         }
@@ -721,8 +725,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 32px;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
             padding-right: 40px;
             border-bottom: 2px solid #E0E7EF;
             position: relative;
@@ -779,7 +783,7 @@
         }
 
         .form-group {
-            margin-bottom: 32px;
+            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -789,7 +793,7 @@
 
         .form-label {
             display: block;
-            margin-bottom: 14px !important;
+            margin-bottom: 6px !important;
             padding-left: 2px;
             font-weight: 600;
             font-size: 0.9375rem;
@@ -802,13 +806,13 @@
             text-transform: none;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         /* Floating label effect */
         .form-group.has-floating-label {
             position: relative;
             padding-top: 0;
         }
-        
+
         .form-group.has-floating-label .form-label {
             position: absolute;
             top: 13px;
@@ -821,20 +825,20 @@
             color: #6B7280;
             pointer-events: none;
         }
-        
-        .form-group.has-floating-label .form-input:focus ~ .form-label,
-        .form-group.has-floating-label .form-input:not(:placeholder-shown) ~ .form-label,
-        .form-group.has-floating-label .form-textarea:focus ~ .form-label,
-        .form-group.has-floating-label .form-textarea:not(:placeholder-shown) ~ .form-label,
-        .form-group.has-floating-label .form-select:focus ~ .form-label,
-        .form-group.has-floating-label .form-select:not([value=""]) ~ .form-label {
+
+        .form-group.has-floating-label .form-input:focus~.form-label,
+        .form-group.has-floating-label .form-input:not(:placeholder-shown)~.form-label,
+        .form-group.has-floating-label .form-textarea:focus~.form-label,
+        .form-group.has-floating-label .form-textarea:not(:placeholder-shown)~.form-label,
+        .form-group.has-floating-label .form-select:focus~.form-label,
+        .form-group.has-floating-label .form-select:not([value=""])~.form-label {
             top: -10px;
             left: 14px;
             font-size: 0.75rem;
             color: #5B9BD5;
             font-weight: 600;
         }
-        
+
         /* Standard label with improved spacing */
         .form-label::before {
             content: '';
@@ -848,7 +852,7 @@
         .form-textarea,
         .form-select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 10px 14px;
             border: 1.5px solid #D1DCE5;
             border-radius: 10px;
             font-size: 0.9375rem;
@@ -861,14 +865,14 @@
             order: 2;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), inset 0 1px 2px rgba(0, 0, 0, 0.02);
         }
-        
+
         /* Floating label input adjustments */
         .form-group.has-floating-label .form-input,
         .form-group.has-floating-label .form-textarea,
         .form-group.has-floating-label .form-select {
             order: 1;
         }
-        
+
         .form-group.has-floating-label .form-label {
             order: 2;
         }
@@ -891,15 +895,15 @@
 
         .form-textarea {
             resize: vertical;
-            min-height: 110px;
+            min-height: 80px;
             line-height: 1.65;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 32px;
+            gap: 16px;
+            margin-bottom: 16px;
         }
 
         .form-row .form-group {
@@ -910,16 +914,16 @@
 
         .color-picker-group {
             display: flex;
-            gap: 16px;
+            gap: 12px;
             flex-wrap: wrap;
             align-items: center;
             justify-content: flex-start;
-            padding: 12px 0;
+            padding: 4px 0;
         }
 
         .color-option {
-            width: 48px;
-            height: 48px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: 3px solid transparent;
             cursor: pointer;
@@ -953,13 +957,18 @@
 
         .modal-footer {
             display: flex;
-            gap: 14px;
+            gap: 12px;
             justify-content: flex-end;
+<<<<<<< HEAD
             margin-top: 36px;
             padding-top: 28px;
         }
         
         .modal-footer:not(#sharedLogoutModal .modal-footer) {
+=======
+            margin-top: 24px;
+            padding-top: 20px;
+>>>>>>> feature/final
             border-top: 2px solid #E0E7EF;
         }
 
@@ -1293,6 +1302,7 @@
                 opacity: 0;
                 transform: translateY(-30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -1446,6 +1456,8 @@
             <a href="/dashboard" class="nav-btn"><i class="fa fa-list"></i> Tasks</a>
             <a href="/timer" class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
             <a href="/calendar" class="nav-btn active"><i class="fa fa-calendar"></i> Calendar</a>
+            <a href="/profile" class="nav-btn"><i class="fa fa-user"></i> Profile</a>
+            <a href="/settings" class="nav-btn"><i class="fa fa-cog"></i> Settings</a>
         </div>
 
         <div class="right">
@@ -1570,7 +1582,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Date *</label>
-                        <input type="date" class="form-input" id="eventDate" required>
+                        <input type="text" class="form-input" id="eventDate" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Category</label>
@@ -1629,7 +1641,7 @@
                             </div>
                             <div class="form-group" style="margin: 0;">
                                 <label class="form-label" style="font-size: 13px; color: #666;">End repeat:</label>
-                                <input type="date" class="form-input" id="eventRecurrenceEndDate"
+                                <input type="text" class="form-input" id="eventRecurrenceEndDate"
                                     style="font-size: 14px;">
                             </div>
                         </div>
@@ -1710,7 +1722,8 @@
                 <button type="button" class="btn btn-danger logout-btn-confirm" onclick="confirmLogout()">
                     Logout <i class="fa fa-sign-out-alt"></i>
                 </button>
-                <button type="button" class="btn btn-cancel logout-btn-stay" onclick="closeLogoutModal()">Stay logged in</button>
+                <button type="button" class="btn btn-cancel logout-btn-stay" onclick="closeLogoutModal()">Stay logged
+                    in</button>
             </div>
         </div>
     </div>
@@ -1800,7 +1813,7 @@
             document.getElementById('btnToday').addEventListener('click', navigateToday);
 
             // Add event
-            document.getElementById('btnAddEvent').addEventListener('click', openAddEventModal);
+            document.getElementById('btnAddEvent').addEventListener('click', () => openAddEventModal());
 
             // Analytics
             document.getElementById('btnAnalytics').addEventListener('click', openAnalyticsModal);
@@ -1905,6 +1918,8 @@
             const prevMonthDays = new Date(year, month, 0).getDate();
 
             const today = new Date();
+            today.setHours(0, 0, 0, 0); // normalize to midnight
+
             const isToday = (d, m, y) =>
                 d === today.getDate() && m === today.getMonth() && y === today.getFullYear();
 
@@ -1918,9 +1933,30 @@
             // Current month days
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayEl = createDayElement(day, month, year, false);
+
+                // Check if it's today
                 if (isToday(day, month, year)) {
                     dayEl.classList.add('today');
                 }
+
+                // ✅ Disable past dates
+                const thisDate = new Date(year, month, day);
+                thisDate.setHours(0, 0, 0, 0);
+                if (thisDate < today) {
+                    dayEl.classList.add('past');             // optional styling
+                    dayEl.style.pointerEvents = 'none';      // cannot click
+                    dayEl.style.opacity = '0.5';             // greyed out
+                } else {
+                    // ✅ Add click to add event for non-past dates
+                    const dateStr = dayEl.dataset.date;
+                    dayEl.addEventListener('click', (e) => {
+                        // Don't open modal if clicking on an event dot
+                        if (!e.target.classList.contains('event-dot')) {
+                            openAddEventModal(dateStr);
+                        }
+                    });
+                }
+
                 grid.appendChild(dayEl);
             }
 
@@ -1932,6 +1968,7 @@
                 grid.appendChild(dayEl);
             }
         }
+
 
         function createDayElement(day, month, year, isOtherMonth) {
             const dayEl = document.createElement('div');
@@ -1991,19 +2028,18 @@
             weekStart.setDate(currentDate.getDate() - currentDate.getDay());
 
             const today = new Date();
+            today.setHours(0, 0, 0, 0); // normalize to midnight
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             for (let i = 0; i < 7; i++) {
                 const day = new Date(weekStart);
                 day.setDate(weekStart.getDate() + i);
+                day.setHours(0, 0, 0, 0);
 
                 const dayEl = document.createElement('div');
                 dayEl.className = 'week-day';
 
-                const isToday = day.getDate() === today.getDate() &&
-                    day.getMonth() === today.getMonth() &&
-                    day.getFullYear() === today.getFullYear();
-
+                const isToday = day.getTime() === today.getTime();
                 if (isToday) {
                     dayEl.classList.add('today');
                 }
@@ -2011,24 +2047,37 @@
                 const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
                 dayEl.dataset.date = dateStr;
 
-                // Set up as drop zone
-                dayEl.addEventListener('dragover', handleDragOver);
-                dayEl.addEventListener('drop', handleDrop);
-                dayEl.addEventListener('dragleave', handleDragLeave);
+                // ✅ Disable past dates
+                if (day < today) {
+                    dayEl.classList.add('past');              // optional styling
+                    dayEl.style.pointerEvents = 'none';       // cannot click
+                    dayEl.style.opacity = '0.5';              // greyed out
+                } else {
+                    // Set up as drop zone ONLY for future/today
+                    dayEl.addEventListener('dragover', handleDragOver);
+                    dayEl.addEventListener('drop', handleDrop);
+                    dayEl.addEventListener('dragleave', handleDragLeave);
+
+                    // Click to add event
+                    dayEl.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('event-dot')) {
+                            openAddEventModal(dateStr);
+                        }
+                    });
+                }
 
                 // Create header with day name and number
                 dayEl.innerHTML = `
-                    <div class="week-day-header">
-                        <div class="week-day-name">${dayNames[i]}</div>
-                        <div class="week-day-number">${day.getDate()}</div>
-                    </div>
-                    <div class="week-day-events" data-date="${dateStr}"></div>
-                `;
+            <div class="week-day-header">
+                <div class="week-day-name">${dayNames[i]}</div>
+                <div class="week-day-number">${day.getDate()}</div>
+            </div>
+            <div class="week-day-events" data-date="${dateStr}"></div>
+        `;
 
-                // Add events
+                // Add events (you may want to skip adding events for past dates)
                 const dayEvents = allEvents.filter(e => e.date === dateStr);
                 const eventsContainer = dayEl.querySelector('.week-day-events');
-
                 dayEvents.forEach(event => {
                     const eventEl = document.createElement('div');
                     eventEl.className = `event-dot event-type-${event.type}`;
@@ -2037,10 +2086,9 @@
                     }
                     eventEl.textContent = event.title;
                     eventEl.style.background = event.color;
-                    eventEl.addEventListener('click', () => showEventDetails(event));
 
                     // Make ONLY calendar events draggable, NOT task events
-                    if (event.type !== 'task') {
+                    if (event.type !== 'task' && day >= today) {
                         eventEl.setAttribute('draggable', 'true');
                         eventEl._eventData = event;
                         eventEl.addEventListener('dragstart', handleDragStart);
@@ -2050,17 +2098,10 @@
                     eventsContainer.appendChild(eventEl);
                 });
 
-                // Click to add event - DISABLED: Modal should only open from "New Event" button
-                // dayEl.addEventListener('click', (e) => {
-                //     // Don't open modal if clicking on an event
-                //     if (!e.target.classList.contains('event-dot')) {
-                //         openAddEventModal(dateStr);
-                //     }
-                // });
-
                 grid.appendChild(dayEl);
             }
         }
+
 
         // ===== Render Agenda View =====
         function renderAgendaView() {
@@ -2248,10 +2289,35 @@
             document.getElementById('modalTitle').textContent = 'Add Event';
             document.getElementById('eventForm').reset();
 
-            if (dateStr) {
-                document.getElementById('eventDate').value = dateStr;
-            } else {
-                document.getElementById('eventDate').value = new Date().toISOString().split('T')[0];
+            // ✅ Initialize Flatpickr to prevent selecting past dates
+            const today = new Date().toISOString().split('T')[0];
+            const eventDateInput = document.getElementById('eventDate');
+
+            // Destroy existing Flatpickr instance if any
+            if (eventDateInput._flatpickr) {
+                eventDateInput._flatpickr.destroy();
+            }
+
+            // Initialize Flatpickr with minDate set to today
+            flatpickr(eventDateInput, {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                defaultDate: dateStr || today
+            });
+
+            // ✅ Also initialize Flatpickr for recurrence end date
+            const recurrenceEndDateInput = document.getElementById('eventRecurrenceEndDate');
+            if (recurrenceEndDateInput) {
+                // Destroy existing Flatpickr instance if any
+                if (recurrenceEndDateInput._flatpickr) {
+                    recurrenceEndDateInput._flatpickr.destroy();
+                }
+
+                // Initialize Flatpickr with minDate set to today
+                flatpickr(recurrenceEndDateInput, {
+                    dateFormat: "Y-m-d",
+                    minDate: "today"
+                });
             }
 
             // Reset color selection
@@ -2453,7 +2519,7 @@
         }
 
         // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
+        window.addEventListener('click', function (event) {
             const modal = document.getElementById('sharedLogoutModal');
             if (event.target === modal) {
                 closeLogoutModal();
@@ -2849,6 +2915,9 @@
             }
         }
     </script>
+
+
+
 
 </body>
 

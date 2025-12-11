@@ -219,6 +219,7 @@ class UserStreak(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.current_streak} day streak"
     
+    
     def update_streak(self, session_date):
         """Update streak based on new focus session date."""
         from datetime import timedelta
@@ -244,4 +245,28 @@ class UserStreak(models.Model):
             self.longest_streak = self.current_streak
         
         self.save()
+
+
+# ===== USER PROFILE MODEL (AVATAR) =====
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(upload_to='avatars/', default='defaults/default_avatar.png', blank=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+# Signal to create UserProfile automatically
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
+
 
