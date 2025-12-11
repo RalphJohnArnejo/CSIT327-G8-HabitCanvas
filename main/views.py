@@ -7,8 +7,13 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
 
+<<<<<<< HEAD
 from .models import LoginAttempt, Task, CalendarEvent, TimerSession, UserStreak
 from .forms import TaskForm, CalendarEventForm
+=======
+from .models import LoginAttempt, Task, SubTask
+from .forms import TaskForm
+>>>>>>> 8c46f1bb659f456ec84674ec6dc118f9466e9ec4
 
 
 # ============================================================
@@ -268,6 +273,7 @@ def toggle_favorite(request, task_id):
     return redirect("dashboard")
 
 
+<<<<<<< HEAD
 
 # ============================================================
 # TIMER API
@@ -763,6 +769,132 @@ def delete_event(request, event_id):
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@login_required
+def reschedule_event(request, event_id):
+    """Reschedule an event to a new date (for drag-and-drop)"""
+    if request.method == 'POST':
+        try:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"Reschedule request for event {event_id} by user {request.user}")
+            
+            # Try to get the event
+            try:
+                event = CalendarEvent.objects.get(id=event_id, user=request.user)
+            except CalendarEvent.DoesNotExist:
+                logger.error(f"Event {event_id} not found for user {request.user}")
+                # Check if event exists at all
+                if CalendarEvent.objects.filter(id=event_id).exists():
+                    logger.error(f"Event {event_id} exists but belongs to different user")
+                    return JsonResponse({'status': 'error', 'message': 'Event belongs to different user'}, status=403)
+                return JsonResponse({'status': 'error', 'message': 'Event not found'}, status=404)
+            
+            data = json.loads(request.body)
+            new_date = data.get('new_date')
+            
+            if not new_date:
+                return JsonResponse({'status': 'error', 'message': 'No date provided'}, status=400)
+            
+            logger.info(f"Updating event {event_id} from {event.event_date} to {new_date}")
+            
+            # Update event date (preserves start_time and end_time)
+            event.event_date = new_date
+            event.save()
+            
+            logger.info(f"Successfully rescheduled event {event_id}")
+            return JsonResponse({'status': 'success', 'message': 'Event rescheduled successfully'})
+        except CalendarEvent.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Event not found'}, status=404)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error rescheduling event: {e}", exc_info=True)
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+=======
+# ============================================================
+# SUBTASK ACTIONS
+# ============================================================
+@login_required
+def add_subtask(request, task_id):
+    """Add a subtask to a task"""
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    if request.method == "POST" and request.headers.get("x-requested-with") == "XMLHttpRequest":
+        title = request.POST.get("title", "").strip()
+        if title:
+            subtask = SubTask.objects.create(task=task, title=title)
+            completed, total = task.subtask_progress()
+            return JsonResponse({
+                "success": True,
+                "subtask_id": subtask.id,
+                "title": subtask.title,
+                "completed": subtask.completed,
+                "progress": {"completed": completed, "total": total, "percent": task.subtask_progress_percent()}
+            })
+        return JsonResponse({"success": False, "error": "Title is required"})
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def toggle_subtask(request, subtask_id):
+    """Toggle subtask completion status"""
+    subtask = get_object_or_404(SubTask, id=subtask_id, task__user=request.user)
+    
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        subtask.completed = not subtask.completed
+        subtask.save()
+        task = subtask.task
+        completed, total = task.subtask_progress()
+        return JsonResponse({
+            "success": True,
+            "subtask_id": subtask.id,
+            "completed": subtask.completed,
+            "progress": {"completed": completed, "total": total, "percent": task.subtask_progress_percent()}
+        })
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def delete_subtask(request, subtask_id):
+    """Delete a subtask"""
+    subtask = get_object_or_404(SubTask, id=subtask_id, task__user=request.user)
+    task = subtask.task
+    
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        subtask.delete()
+        completed, total = task.subtask_progress()
+        return JsonResponse({
+            "success": True,
+            "subtask_id": subtask_id,
+            "progress": {"completed": completed, "total": total, "percent": task.subtask_progress_percent()}
+        })
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def get_subtasks(request, task_id):
+    """Get all subtasks for a task"""
+    task = get_object_or_404(Task, id=task_id, user=request.user)
+    
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        subtasks = task.subtasks.all()
+        completed, total = task.subtask_progress()
+        return JsonResponse({
+            "success": True,
+            "subtasks": [
+                {"id": s.id, "title": s.title, "completed": s.completed}
+                for s in subtasks
+            ],
+            "progress": {"completed": completed, "total": total, "percent": task.subtask_progress_percent()}
+        })
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
 
 @login_required
 def reschedule_event(request, event_id):

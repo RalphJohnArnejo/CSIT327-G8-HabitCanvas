@@ -1,45 +1,128 @@
 <div class="task-card {% if task.completed %}completed{% endif %}" 
      data-priority="{{ task.priority }}" data-id="{{ task.id }}">
 
-    <!-- Left section: circle + title/category -->
-    <div class="left">
-        <!-- Completion Circle -->
-        <div class="circle {% if task.completed %}checked{% endif %}">
-            <i class="fa fa-check" {% if not task.completed %}style="display:none"{% endif %}></i>
+    <!-- Main task row -->
+    <div class="task-main-row">
+
+        <!-- Left section -->
+        <div class="left">
+            <div class="circle {% if task.completed %}checked{% endif %}">
+                <i class="fa fa-check" {% if not task.completed %}style="display:none"{% endif %}></i>
+            </div>
+
+            <div class="title-category">
+                <span class="task-title {% if task.completed %}crossed{% endif %}">
+                    {{ task.title }}
+                </span>
+
+                {% if task.category %}
+                    <div class="tag">{{ task.category }}</div>
+                {% endif %}
+            </div>
         </div>
 
-        <div class="title-category">
-            <span class="task-title {% if task.completed %}crossed{% endif %}">{{ task.title }}</span>
-            {% if task.category %}
-                <div class="tag">{{ task.category }}</div>
-            {% endif %}
+        <!-- Deadline (center) -->
+        {% if task.due_date %}
+        <span class="task-deadline">
+            <i class="fa fa-clock"></i> {{ task.due_date }}
+        </span>
+        {% endif %}
+
+        <!-- Right actions -->
+        <div class="right">
+
+            <a href="#" class="subtask-toggle-btn" data-id="{{ task.id }}">
+                <i class="fa fa-list-check"></i>
+                <span class="subtask-count" data-task-id="{{ task.id }}">
+                    {% with task.subtask_progress as progress %}
+                        {% if progress.1 > 0 %}
+                            {{ progress.0 }}/{{ progress.1 }}
+                        {% endif %}
+                    {% endwith %}
+                </span>
+            </a>
+
+            <a href="#" class="favorite-btn" data-id="{{ task.id }}">
+                <i class="fa fa-star {% if task.favorite %}starred{% endif %}"></i>
+            </a>
+
+            <a href="#" 
+               class="edit-btn" 
+               data-id="{{ task.id }}"
+               data-title="{{ task.title }}"
+               data-category="{{ task.category }}"
+               data-difficulty="{{ task.difficulty }}"
+               data-priority="{{ task.priority }}"
+               data-due="{{ task.due_date|default_if_none:'' }}">
+                <i class="fa fa-pen"></i>
+            </a>
+
+            <a href="{% url 'delete_task' task.id %}"
+               class="delete-btn"
+               data-id="{{ task.id }}">
+                <i class="fa fa-trash"></i>
+            </a>
+
+            <a href="{% url 'toggle_complete' task.id %}"
+            class="complete-btn"
+            data-id="{{ task.id }}">
+                <i class="fa {% if task.completed %}fa-rotate-left{% else %}fa-check{% endif %}"></i>
+            </a>
+
         </div>
     </div>
 
-    <!-- Deadline: fixed in center -->
-    {% if task.due_date %}
-    <span class="task-deadline"><i class="fa fa-clock"></i> {{ task.due_date }}</span>
-    {% endif %}
+    <!-- Subtasks section -->
+    <div class="subtasks-section" data-task-id="{{ task.id }}" style="display:none;">
 
-    <!-- Right actions -->
-    <div class="right">
-        <a href="#" class="favorite-btn" data-id="{{ task.id }}">
-            <i class="fa fa-star {% if task.favorite %}starred{% endif %}"></i>
-        </a>
-        <a href="#" class="edit-btn"
-           data-id="{{ task.id }}"
-           data-title="{{ task.title }}"
-           data-category="{{ task.category }}"
-           data-difficulty="{{ task.difficulty }}"
-           data-priority="{{ task.priority }}"
-           data-due="{{ task.due_date|default_if_none:'' }}">
-            <i class="fa fa-pen"></i>
-        </a>
-        <a href="{% url 'delete_task' task.id %}" class="delete-btn" data-id="{{ task.id }}">
-            <i class="fa fa-trash"></i>
-        </a>
-        <a href="{% url 'toggle_complete' task.id %}" class="complete-btn" data-id="{{ task.id }}">
-            <i class="fa {% if task.completed %}fa-rotate-left{% else %}fa-check{% endif %}"></i>
-        </a>
+        <!-- Progress bar -->
+        <div class="subtask-progress-container">
+            <div class="subtask-progress-bar">
+                <div class="subtask-progress-fill" data-task-id="{{ task.id }}"
+                style="width: {{ task.subtask_progress_percent }}%;">
+                </div>
+            </div>
+            <span class="subtask-progress-text" data-task-id="{{ task.id }}">
+                {% with task.subtask_progress as progress %}
+                    {{ progress.0 }}/{{ progress.1 }} completed
+                {% endwith %}
+            </span>
+        </div>
+
+        <!-- Subtask list -->
+        <ul class="subtask-list" data-task-id="{{ task.id }}">
+            {% for subtask in task.subtasks.all %}
+            <li class="subtask-item {% if subtask.completed %}completed{% endif %}"
+                data-subtask-id="{{ subtask.id }}">
+
+                <label class="subtask-checkbox">
+                    <input type="checkbox"
+                    data-subtask-id="{{ subtask.id }}"
+                    {% if subtask.completed %}checked{% endif %}>
+                    <span class="subtask-title {% if subtask.completed %}crossed{% endif %}">
+                        {{ subtask.title }}
+                    </span>
+                </label>
+
+                <button class="subtask-delete-btn"
+                        data-subtask-id="{{ subtask.id }}">
+                    <i class="fa fa-times"></i>
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Add subtask -->
+        <div class="add-subtask-form" data-task-id="{{ task.id }}">
+            <input type="text"
+            class="subtask-input"
+            placeholder="Add a subtask..."
+            data-task-id="{{ task.id }}">
+            <button class="add-subtask-btn" data-task-id="{{ task.id }}">
+                <i class="fa fa-plus"></i>
+            </button>
+        </div>
+
     </div>
+
 </div>

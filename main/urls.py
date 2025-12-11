@@ -4,7 +4,9 @@ from .views import (
     landing_view, register_view, login_view, dashboard_view, logout_view,
     add_task, edit_task, delete_task, toggle_complete, toggle_favorite,
     timer_view, save_session, get_timer_stats,
-    calendar_view, get_events, add_event, edit_event, delete_event, reschedule_event
+    calendar_view, get_events, add_event, edit_event, delete_event, reschedule_event,
+    # Subtask views
+    add_subtask, toggle_subtask, delete_subtask, get_subtasks
 )
 
 urlpatterns = [
@@ -37,6 +39,12 @@ urlpatterns = [
     path("calendar/edit_event/<int:event_id>/", edit_event, name="edit_event"),
     path("calendar/delete_event/<int:event_id>/", delete_event, name="delete_event"),
     path('calendar/reschedule_event/<int:event_id>/', reschedule_event, name='reschedule_event'),
+
+    # Subtasks
+    path("tasks/<int:task_id>/subtasks/", get_subtasks, name="get_subtasks"),
+    path("tasks/<int:task_id>/subtasks/add/", add_subtask, name="add_subtask"),
+    path("subtasks/<int:subtask_id>/toggle/", toggle_subtask, name="toggle_subtask"),
+    path("subtasks/<int:subtask_id>/delete/", delete_subtask, name="delete_subtask"),
 
     # Password reset
     path("password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),

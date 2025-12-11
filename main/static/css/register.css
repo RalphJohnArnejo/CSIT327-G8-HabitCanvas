@@ -5,13 +5,27 @@
     box-sizing: border-box;
 }
 
+/* ===== COLOR PALETTE (from logo) ===== */
+:root {
+    --primary-blue: #B8D4E8;
+    --primary-brown: #8B7355;
+    --accent-red: #E85A5A;
+    --accent-green: #5DBB63;
+    --accent-blue: #5B9BD5;
+    --accent-purple: #9B7BB8;
+    --cream: #F5F0E8;
+    --dark-brown: #5D4E3C;
+    --light-bg: #F8FBFD;
+}
+
 body {
     font-family: "Poppins", sans-serif;
-    background-color: #f7f7f7;
+    background: linear-gradient(135deg, var(--light-bg) 0%, #E8F4F8 50%, #FDF8F3 100%);
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 20px;
 }
 
 /* Container */
@@ -24,23 +38,25 @@ body {
 
 /* Card */
 .register-card {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #ffffff 0%, var(--cream) 100%);
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(139, 115, 85, 0.15);
     width: 100%;
-    max-width: 380px;
-    padding: 2.5rem;
+    max-width: 420px;
+    padding: 3rem;
     text-align: center;
+    border: 2px solid var(--primary-blue);
 }
 
 /* ✅ Logo Image (replaces gray circle) */
 .logo-container {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     margin: 0 auto 1.5rem;
-    border-radius: 50%;
+    border-radius: 20px;
     overflow: hidden;
-    border: 2px solid #ddd;
+    border: 3px solid var(--primary-blue);
+    box-shadow: 0 4px 15px rgba(139, 115, 85, 0.2);
 }
 
 .logo-container img {
@@ -51,128 +67,142 @@ body {
 
 /* Headings */
 h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #212121;
-    margin-bottom: 0.25rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark-brown);
+    margin-bottom: 0.5rem;
 }
 
 .subtitle {
-    color: #737373;
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
+    color: var(--primary-brown);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
 }
 
 /* Inputs */
 .input-group {
     text-align: left;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
 }
 
 .input-group label {
     display: block;
-    font-size: 0.875rem;
-    color: #4169E1;
-    margin-bottom: 0.3rem;
-    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--accent-purple);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
 }
 
 .input-group input {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 14px 18px;
+    border: 2px solid var(--primary-blue);
+    border-radius: 12px;
     font-size: 0.95rem;
-    transition: 0.2s;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--dark-brown);
 }
 
 .input-group input:focus {
-    border-color: #4169E1;
+    border-color: var(--accent-purple);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.15);
+    box-shadow: 0 0 0 3px rgba(155, 123, 184, 0.2);
 }
 
 /* Tip text */
 .tip {
     font-size: 0.8rem;
-    color: #777;
-    margin-top: 0.25rem;
+    color: var(--primary-brown);
+    margin-top: 0.3rem;
 }
 
 /* Error message */
 .error {
-    color: red;
+    color: var(--accent-red);
     margin-top: 0.75rem;
     font-size: 0.9rem;
+    background: #FFE8E8;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 500;
 }
 
 /* Button */
 .create-btn {
     width: 100%;
-    background-color: #4169E1;
+    background: linear-gradient(135deg, var(--accent-green) 0%, #4AA84F 100%);
     color: white;
-    padding: 0.75rem;
+    padding: 14px;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
     font-size: 1rem;
     cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(93, 187, 99, 0.3);
+    margin-top: 0.5rem;
 }
 
 .create-btn:hover {
-    background-color: #3557c7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(93, 187, 99, 0.4);
 }
 
 /* Login link */
 .login-link {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: #212121;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--primary-brown);
 }
 
 .login-link a {
-    color: #4169E1;
+    color: var(--accent-blue);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
 .login-link a:hover {
-    text-decoration: underline;
+    color: var(--accent-purple);
 }
+
 /* --- BUTTON STYLES (same as landing page) --- */
 .btn-primary {
-    background-color: #007bff;
+    background: linear-gradient(135deg, var(--accent-green) 0%, #4AA84F 100%);
     color: #fff;
-    padding: 10px 20px;
-    border-radius: 6px;
+    padding: 12px 24px;
+    border-radius: 12px;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(93, 187, 99, 0.3);
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(93, 187, 99, 0.4);
 }
 
 /* Optional: For transparent Sign In-style buttons */
 .btn-outline {
     background-color: transparent;
-    color: #007bff;
-    border: 2px solid #007bff;
-    padding: 10px 20px;
-    border-radius: 6px;
+    color: var(--accent-blue);
+    border: 2px solid var(--accent-blue);
+    padding: 12px 24px;
+    border-radius: 12px;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .btn-outline:hover {
-    background-color: #007bff;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
     color: #fff;
+    border-color: transparent;
 }
 
 

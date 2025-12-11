@@ -6,27 +6,66 @@
     font-family: "Poppins", sans-serif;
 }
 
+/* ===== COLOR PALETTE (from logo) ===== */
+:root {
+    --primary-blue: #B8D4E8;
+    --primary-brown: #8B7355;
+    --accent-red: #E85A5A;
+    --accent-green: #5DBB63;
+    --accent-blue: #5B9BD5;
+    --accent-purple: #9B7BB8;
+    --cream: #F5F0E8;
+    --dark-brown: #5D4E3C;
+    --light-bg: #F8FBFD;
+}
+
 /* --- Page layout --- */
 body {
     display: flex;
     height: 100vh;
-    background-color: #f9f9f9;
+    background: linear-gradient(135deg, var(--light-bg) 0%, #E8F4F8 50%, #FDF8F3 100%);
 }
 
 /* --- Left panel (image) --- */
 .left-panel {
     flex: 1;
-    background-color: #fff;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #A8C8DC 100%);
     display: flex;
     justify-content: center;
     align-items: center;
-    border-right: 1px solid #ddd;
+    border-right: 3px solid var(--cream);
+    position: relative;
+    overflow: hidden;
+}
+
+.left-panel::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    top: -50px;
+    left: -50px;
+}
+
+.left-panel::after {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    bottom: -30px;
+    right: -30px;
 }
 
 .left-panel img {
-    width: 80%;
-    max-width: 400px;
+    width: 85%;
+    max-width: 420px;
     height: auto;
+    filter: drop-shadow(0 10px 30px rgba(93, 78, 60, 0.2));
+    z-index: 1;
 }
 
 /* --- Right panel (login form) --- */
@@ -35,111 +74,159 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 
 .login-container {
     width: 100%;
-    max-width: 400px;
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 420px;
+    background: linear-gradient(135deg, #ffffff 0%, var(--cream) 100%);
+    padding: 45px 40px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(139, 115, 85, 0.15);
+    border: 2px solid var(--primary-blue);
 }
 
 h2 {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    color: var(--dark-brown);
+    font-size: 1.8rem;
+    font-weight: 700;
 }
 
 .subtitle {
     text-align: center;
-    margin-bottom: 25px;
-    color: #666;
+    margin-bottom: 30px;
+    color: var(--primary-brown);
+    font-size: 0.95rem;
 }
 
 input[type="email"],
-input[type="password"] {
+input[type="password"],
+input[type="text"] {
     width: 100%;
-    padding: 10px;
+    padding: 14px 18px;
     margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border: 2px solid var(--primary-blue);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: white;
+    color: var(--dark-brown);
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 3px rgba(155, 123, 184, 0.2);
 }
 
 button {
     width: 100%;
-    padding: 10px;
-    background-color: #007bff;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent-green) 0%, #4AA84F 100%);
     border: none;
-    border-radius: 5px;
+    border-radius: 12px;
     color: white;
-    font-size: 16px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(93, 187, 99, 0.3);
+    margin-top: 10px;
 }
 
 button:hover {
-    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(93, 187, 99, 0.4);
 }
 
 .options {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 10px 0 15px;
+    margin: 15px 0 20px;
     font-size: 14px;
+    color: var(--primary-brown);
+}
+
+.options label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.options input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-green);
 }
 
 a {
-    color: #007bff;
+    color: var(--accent-blue);
     text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
 a:hover {
-    text-decoration: underline;
+    color: var(--accent-purple);
 }
 
 .register {
     text-align: center;
-    margin-top: 15px;
+    margin-top: 20px;
+    color: var(--primary-brown);
 }
 
 .error {
-    color: red;
+    color: var(--accent-red);
     text-align: center;
+    background: #FFE8E8;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: 500;
 }
 
 /* --- BUTTON STYLES (same as landing page) --- */
 .btn-primary {
-    background-color: #007bff;
+    background: linear-gradient(135deg, var(--accent-green) 0%, #4AA84F 100%);
     color: #fff;
-    padding: 10px 20px;
-    border-radius: 6px;
+    padding: 12px 24px;
+    border-radius: 12px;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(93, 187, 99, 0.3);
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(93, 187, 99, 0.4);
 }
 
 /* Optional: For transparent Sign In-style buttons */
 .btn-outline {
     background-color: transparent;
-    color: #007bff;
-    border: 2px solid #007bff;
-    padding: 10px 20px;
-    border-radius: 6px;
+    color: var(--accent-blue);
+    border: 2px solid var(--accent-blue);
+    padding: 12px 24px;
+    border-radius: 12px;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .btn-outline:hover {
-    background-color: #007bff;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
     color: #fff;
+    border-color: transparent;
 }
