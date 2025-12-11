@@ -719,11 +719,13 @@
 
         .modal-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             margin-bottom: 32px;
             padding-bottom: 20px;
+            padding-right: 40px;
             border-bottom: 2px solid #E0E7EF;
+            position: relative;
         }
 
         @keyframes slideUp {
@@ -744,6 +746,8 @@
             margin: 0;
             color: var(--dark-brown);
             letter-spacing: -0.02em;
+            text-align: center;
+            flex: 1;
         }
 
         .modal-close {
@@ -756,11 +760,22 @@
             width: 32px;
             height: 32px;
             transition: all 0.2s ease;
+            position: absolute;
+            right: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
         }
 
         .modal-close:hover {
             color: var(--gray-900);
             transform: scale(1.1);
+        }
+
+        .modal-close:active {
+            transform: scale(0.95);
         }
 
         .form-group {
@@ -1237,6 +1252,181 @@
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        /* ===== Shared Logout Modal Styles ===== */
+        #sharedLogoutModal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #sharedLogoutModal.active {
+            display: flex !important;
+        }
+
+        #sharedLogoutModal .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+            margin: auto;
+            padding: 40px 35px;
+            border-radius: 18px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: logoutModalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes logoutModalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logout-modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logout-modal-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: #1a1a1a;
+            letter-spacing: -0.5px;
+        }
+
+        .logout-modal-subtitle {
+            font-size: 17px;
+            color: #666;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .logout-modal-body {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .user-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            color: #1976d2;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+        }
+
+        .logout-user-label {
+            font-size: 14px;
+            color: #888;
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .logout-user-email {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1976d2;
+            margin: 0 0 25px 0;
+        }
+
+        .logout-info-box {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #ffb74d;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0 30px 0;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+        }
+
+        .logout-info-box p {
+            margin: 0;
+            font-size: 15px;
+            color: #5d4037;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        #sharedLogoutModal .modal-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .logout-btn-confirm {
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .logout-btn-confirm:hover {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(229, 57, 53, 0.4);
+        }
+
+        .logout-btn-confirm:active {
+            transform: translateY(0);
+        }
+
+        .logout-btn-stay {
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #424242;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .logout-btn-stay:hover {
+            background: #f5f5f5;
+            border-color: #bdbdbd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .logout-btn-stay:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 
@@ -1256,7 +1446,7 @@
         </div>
 
         <div class="right">
-            <a href="#" class="btn-logout" id="btnLogout">Logout</a>
+            <a href="#" class="btn-logout" onclick="openLogoutModal(event)">Logout</a>
         </div>
     </header>
 
@@ -1484,6 +1674,7 @@
         <div class="modal-content" style="max-width: 450px;">
             <div class="modal-header">
                 <h2 class="modal-title">Delete Event</h2>
+                <button class="modal-close" id="btnCloseDeleteConfirm">&times;</button>
             </div>
             <div class="delete-confirm-content">
                 <p>Are you sure you want to delete this event?</p>
@@ -1495,8 +1686,8 @@
         </div>
     </div>
 
-    <!-- Logout Confirmation Modal -->
-    <div class="modal" id="logoutModal">
+    <!-- Shared Logout Confirmation Modal -->
+    <div class="modal" id="sharedLogoutModal">
         <div class="modal-content" style="max-width: 500px;">
             <div class="logout-modal-header">
                 <h2 class="logout-modal-title">Goodbye 👋</h2>
@@ -1513,11 +1704,10 @@
                 </div>
             </div>
             <div class="modal-footer" style="flex-direction: column; gap: 12px;">
-                <button type="button" class="btn btn-danger logout-btn-confirm" id="btnConfirmLogout">
+                <button type="button" class="btn btn-danger logout-btn-confirm" onclick="confirmLogout()">
                     Logout <i class="fa fa-sign-out-alt"></i>
                 </button>
-                <button type="button" class="btn btn-cancel logout-btn-stay" id="btnCancelLogout">Stay logged
-                    in</button>
+                <button type="button" class="btn btn-cancel logout-btn-stay" onclick="closeLogoutModal()">Stay logged in</button>
             </div>
         </div>
     </div>
@@ -1638,11 +1828,7 @@
             // Delete confirmation
             document.getElementById('btnCancelDelete').addEventListener('click', closeDeleteConfirmModal);
             document.getElementById('btnConfirmDelete').addEventListener('click', confirmDelete);
-
-            // Logout confirmation
-            document.getElementById('btnLogout').addEventListener('click', showLogoutModal);
-            document.getElementById('btnCancelLogout').addEventListener('click', closeLogoutModal);
-            document.getElementById('btnConfirmLogout').addEventListener('click', confirmLogout);
+            document.getElementById('btnCloseDeleteConfirm').addEventListener('click', closeDeleteConfirmModal);
 
             // Reminder notification toggle
             document.getElementById('eventReminderEnabled').addEventListener('change', function () {
@@ -2249,19 +2435,27 @@
             }
         }
 
-        // ===== Logout Functions =====
-        function showLogoutModal(e) {
-            e.preventDefault();
-            document.getElementById('logoutModal').classList.add('active');
+        // ===== Shared Logout Modal Functions =====
+        function openLogoutModal(event) {
+            if (event) event.preventDefault();
+            document.getElementById('sharedLogoutModal').classList.add('active');
         }
 
         function closeLogoutModal() {
-            document.getElementById('logoutModal').classList.remove('active');
+            document.getElementById('sharedLogoutModal').classList.remove('active');
         }
 
         function confirmLogout() {
             window.location.href = '{% url "logout" %}';
         }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('sharedLogoutModal');
+            if (event.target === modal) {
+                closeLogoutModal();
+            }
+        });
 
         // ===== Utility Functions =====
         function getCookie(name) {
@@ -2301,24 +2495,20 @@
                             const [hours, minutes] = event.start_time.split(':');
                             eventDateTime.setHours(parseInt(hours), parseInt(minutes));
                         } else {
-                            eventDateTime.setHours(9, 0); // Default to 9 AM if no time
+                            eventDateTime.setHours(9, 0);
                         }
 
                         const reminderTime = new Date(eventDateTime.getTime() - event.reminder_minutes_before * 60000);
-
-                        // Check if reminder should fire within the next 5 minutes
                         const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60000);
 
                         if (reminderTime > now && reminderTime <= fiveMinutesFromNow) {
-                            // Check if we haven't already shown this notification
                             const notificationKey = `notified_${event.id}_${event.date}`;
                             if (!localStorage.getItem(notificationKey)) {
                                 showNotification(event);
                                 localStorage.setItem(notificationKey, 'true');
-                                // Clean up old notification flags after event passes
                                 setTimeout(() => {
                                     localStorage.removeItem(notificationKey);
-                                }, 24 * 60 * 60 * 1000); // Remove after 24 hours
+                                }, 24 * 60 * 60 * 1000);
                             }
                         }
                     }
