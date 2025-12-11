@@ -19,7 +19,6 @@
     </div>
 
     <div class="nav-center">
-        <a href="{% url 'dashboard' %}" class="nav-btn {% if request.path == '/dashboard/' %}active{% endif %}"><i class="fa fa-home"></i> Dashboard</a>
         <a href="{% url 'tasks' %}" class="nav-btn {% if request.path == '/tasks/' %}active{% endif %}"><i class="fa fa-list"></i> Tasks</a>
         <a href="{% url 'timer' %}" class="nav-btn {% if request.path == '/timer/' %}active{% endif %}"><i class="fa fa-stopwatch"></i> Timer</a>
         <a href="/calendar/" class="nav-btn {% if request.path == '/calendar/' %}active{% endif %}"><i class="fa fa-calendar"></i> Calendar</a>

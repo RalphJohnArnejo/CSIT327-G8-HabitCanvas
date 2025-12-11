@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +8,12 @@
 <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 </head>
 <body>
 
@@ -110,7 +116,8 @@
             </select>
 
             <label for="due_date">Due Date</label>
-            <input type="date" name="due_date" id="due_date">
+            <input type="text" name="due_date" id="due_date" class="flatpickr">
+
 
             <label for="priority">Priority</label>
             <select name="priority" id="priority">
@@ -149,7 +156,8 @@
             </select>
 
             <label for="edit_due_date">Due Date</label>
-            <input type="date" name="due_date" id="edit_due_date">
+            <input type="text" name="due_date" id="edit_due_date" class="flatpickr">
+
 
             <label for="edit_priority">Priority</label>
             <select name="priority" id="edit_priority">
@@ -212,7 +220,7 @@ function openEditModal(btn){
     document.getElementById("edit_category").value=btn.dataset.category;
     document.getElementById("edit_difficulty").value=btn.dataset.difficulty;
     document.getElementById("edit_priority").value=btn.dataset.priority;
-    document.getElementById("edit_due_date").value=btn.dataset.due;
+    editCalendar.setDate(btn.dataset.due);
     editModal.style.display="block";
 }
 
@@ -596,6 +604,36 @@ function updateSubtaskProgress(taskId, progress){
 // Attach events initially
 attachTaskEvents();
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    flatpickr(".flatpickr", {
+        minDate: "today",       // ⛔ prevents selecting past dates
+        dateFormat: "Y-m-d",    // standard yyyy-mm-dd format
+    });
+});
+</script>
+
+<script>
+let addCalendar; 
+let editCalendar;
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Add Task calendar
+    addCalendar = flatpickr("#due_date", {
+        minDate: "today",
+        dateFormat: "Y-m-d",
+    });
+
+    // Edit Task calendar
+    editCalendar = flatpickr("#edit_due_date", {
+        minDate: "today",
+        dateFormat: "Y-m-d",
+    });
+});
+</script>
+
+
 
 
 </body>
