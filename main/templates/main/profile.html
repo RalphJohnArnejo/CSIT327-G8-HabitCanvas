@@ -1,0 +1,783 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitCanvas | Profile</title>
+
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .profile-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            color: #1976d2;
+            border: 5px solid white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            font-weight: 700;
+        }
+
+        .profile-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 10px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .profile-email {
+            font-size: 18px;
+            opacity: 0.95;
+            margin-bottom: 20px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 25px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .info-card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card-title i {
+            color: #667eea;
+            font-size: 22px;
+        }
+
+        .info-row {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .btn-edit-profile {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-edit-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #f5f5f5;
+            color: #666;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-save {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        @media(max-width: 768px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-stats {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <header class="top-nav">
+        <div class="left">
+            <img src="{% static 'habitcanvass.jpg' %}" class="logo-img">
+            <span class="logo-text">HabitCanvas</span>
+        </div>
+
+        <div class="nav-center">
+            <a href="/dashboard" class="nav-btn"><i class="fa fa-list"></i> Tasks</a>
+            <a href="/timer" class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
+            <a href="/calendar" class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
+            <a href="/profile" class="nav-btn active"><i class="fa fa-user"></i> Profile</a>
+            <a href="/settings" class="nav-btn"><i class="fa fa-cog"></i> Settings</a>
+        </div>
+
+        <div class="right">
+            <a href="#" class="btn-logout" onclick="openLogoutModal(event)">Logout</a>
+        </div>
+    </header>
+
+    <!-- PROFILE CONTENT -->
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {% if user.profile.avatar and 'default' not in user.profile.avatar.url %}
+                <img src="{{ user.profile.avatar.url }}" alt="Profile"
+                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                {% else %}
+                {{ user.email.0|upper }}
+                {% endif %}
+            </div>
+            <h1 class="profile-name">
+                {% if user.first_name and user.last_name %}
+                {{ user.first_name }} {{ user.last_name }}
+                {% else %}
+                {{ user.email|title }}
+                {% endif %}
+            </h1>
+            <p class="profile-email">{{ user.email }}</p>
+
+            <button class="btn-edit-profile" onclick="openEditModal()">
+                <i class="fa fa-edit"></i>
+                Edit Profile
+            </button>
+
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ user.tasks.count }}</span>
+                    <span class="stat-label">Tasks</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ user.calendar_events.count }}</span>
+                    <span class="stat-label">Events</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ user.timer_sessions.count }}</span>
+                    <span class="stat-label">Sessions</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <div class="info-card">
+                <h2 class="info-card-title">
+                    <i class="fa fa-user-circle"></i>
+                    Account Information
+                </h2>
+                <div class="info-row">
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value">{{ user.email }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Username</div>
+                    <div class="info-value">{{ user.username }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Member Since</div>
+                    <div class="info-value">{{ user.date_joined|date:"F d, Y" }}</div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h2 class="info-card-title">
+                    <i class="fa fa-chart-line"></i>
+                    Activity Summary
+                </h2>
+                <div class="info-row">
+                    <div class="info-label">Total Tasks Created</div>
+                    <div class="info-value">{{ user.tasks.count }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Completed Tasks</div>
+                    <div class="info-value">{{ completed_tasks_count|default:"0" }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Calendar Events</div>
+                    <div class="info-value">{{ user.calendar_events.count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <form id="editProfileForm" onsubmit="saveProfile(event)">
+                <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                    <label for="avatarInput" style="cursor: pointer; display: inline-block;">
+                        <div
+                            style="width: 80px; height: 80px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin: 0 auto; overflow: hidden; border: 2px dashed #ccc;">
+                            {% if user.profile.avatar and 'default' not in user.profile.avatar.url %}
+                            <img src="{{ user.profile.avatar.url }}" id="avatarPreview"
+                                style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <i class="fa fa-camera" id="avatarIcon" style="font-size: 24px; color: #999;"></i>
+                            <img id="avatarPreview"
+                                style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                            {% endif %}
+                        </div>
+                        <div style="font-size: 12px; color: #667eea; margin-top: 5px;">Change Picture</div>
+                    </label>
+                    <input type="file" id="avatarInput" accept="image/*" style="display: none;"
+                        onchange="previewAvatar(this)">
+                </div>
+
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="firstName" value="{{ user.first_name }}" placeholder="Enter your first name">
+                </div>
+
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" value="{{ user.last_name }}" placeholder="Enter your last name">
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" value="{{ user.email }}" placeholder="your.email@example.com"
+                        required>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Shared Logout Modal -->
+    <div class="modal" id="sharedLogoutModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="logout-modal-header">
+                <h2 class="logout-modal-title">Goodbye 👋</h2>
+                <p class="logout-modal-subtitle">Are you sure you want to log out?</p>
+            </div>
+            <div class="logout-modal-body">
+                <div class="user-avatar">
+                    <i class="fa fa-user-circle"></i>
+                </div>
+                <p class="logout-user-label">Logged in as</p>
+                <p class="logout-user-email">{{ user.email }}</p>
+                <div class="logout-info-box">
+                    <p>You will be signed out of your account and redirected to the login page</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="flex-direction: column; gap: 12px;">
+                <button type="button" class="btn btn-danger logout-btn-confirm" onclick="confirmLogout()">
+                    Logout <i class="fa fa-sign-out-alt"></i>
+                </button>
+                <button type="button" class="btn btn-cancel logout-btn-stay" onclick="closeLogoutModal()">Stay logged
+                    in</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Shared Logout Modal Styles (same as dashboard) */
+        #sharedLogoutModal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #sharedLogoutModal.active {
+            display: flex !important;
+        }
+
+        .logout-modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logout-modal-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: #1a1a1a;
+            letter-spacing: -0.5px;
+        }
+
+        .logout-modal-subtitle {
+            font-size: 17px;
+            color: #666;
+            margin: 0;
+            font-weight: 400;
+        }
+
+        .logout-modal-body {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .user-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            color: #1976d2;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+        }
+
+        .logout-user-label {
+            font-size: 14px;
+            color: #888;
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .logout-user-email {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1976d2;
+            margin: 0 0 25px 0;
+        }
+
+        .logout-info-box {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #ffb74d;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0 30px 0;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+        }
+
+        .logout-info-box p {
+            margin: 0;
+            font-size: 15px;
+            color: #5d4037;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .logout-btn-confirm {
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .logout-btn-confirm:hover {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(229, 57, 53, 0.4);
+        }
+
+        .logout-btn-stay {
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #424242;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .logout-btn-stay:hover {
+            background: #f5f5f5;
+            border-color: #bdbdbd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+    </style>
+
+    <script>
+        function getCookie(name) {
+            let value = null;
+            document.cookie.split(";").forEach(c => {
+                c = c.trim();
+                if (c.startsWith(name + "="))
+                    value = decodeURIComponent(c.substring(name.length + 1));
+            });
+            return value;
+        }
+
+        function openEditModal() {
+            document.getElementById('editModal').classList.add('active');
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById('avatarPreview');
+                    const icon = document.getElementById('avatarIcon');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    if (icon) icon.style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function saveProfile(e) {
+            e.preventDefault();
+
+            const successMsg = document.getElementById('successMessage');
+            const errorMsg = document.getElementById('errorMessage');
+
+            try {
+                // 1. Upload Avatar if changed
+                const avatarInput = document.getElementById('avatarInput');
+                if (avatarInput.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append('avatar', avatarInput.files[0]);
+
+                    const avatarRes = await fetch('/profile/update_avatar/', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                        body: formData
+                    });
+                    const avatarResult = await avatarRes.json();
+                    if (!avatarResult.success) throw new Error(avatarResult.error || "Failed to upload avatar");
+                }
+
+                // 2. Update Profile Data
+                const data = {
+                    first_name: document.getElementById('firstName').value,
+                    last_name: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value
+                };
+
+                const res = await fetch('/profile/update/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    successMsg.textContent = "Profile updated successfully!";
+                    successMsg.style.display = 'block';
+                    errorMsg.style.display = 'none';
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    throw new Error(result.error);
+                }
+
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.style.display = 'block';
+                successMsg.style.display = 'none';
+            }
+        }
+
+        function openLogoutModal(event) {
+            event.preventDefault();
+            document.getElementById('sharedLogoutModal').classList.add('active');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('sharedLogoutModal').classList.remove('active');
+        }
+
+        function confirmLogout() {
+            window.location.href = '/logout';
+        }
+
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal') && !event.target.id.startsWith('shared')) {
+                event.target.classList.remove('active');
+            }
+        };
+    </script>
+
+</body>
+
+</html>

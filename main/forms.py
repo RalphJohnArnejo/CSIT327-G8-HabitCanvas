@@ -1,5 +1,5 @@
 from django import forms
-from .models import Task, CalendarEvent
+from .models import Task, CalendarEvent, UserProfile
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -19,3 +19,9 @@ class CalendarEventForm(forms.ModelForm):
             'end_time': forms.TimeInput(attrs={'type': 'time'}),
             'description': forms.Textarea(attrs={'rows': 3}),
         }
+
+class ProfileAvatarForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['avatar']
+

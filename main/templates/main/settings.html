@@ -1,0 +1,560 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitCanvas | Settings</title>
+
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .settings-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .settings-header {
+            margin-bottom: 30px;
+        }
+
+        .settings-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+
+        .settings-header p {
+            font-size: 16px;
+            color: #888;
+            margin: 0;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #ff6b6b;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+
+        .btn-change-password {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            width: 100%;
+        }
+
+        .btn-change-password:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .policy-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .policy-link {
+            padding: 18px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #f0f3f7 100%);
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .policy-link:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .policy-link-text {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .policy-link-text i {
+            font-size: 20px;
+            color: #667eea;
+        }
+
+        .policy-link-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .policy-link-arrow {
+            color: #999;
+            font-size: 18px;
+        }
+
+        .account-info-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .account-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .account-info-label {
+            font-size: 14px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .account-info-value {
+            font-size: 15px;
+            color: #333;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <header class="top-nav">
+        <div class="left">
+            <img src="{% static 'habitcanvass.jpg' %}" class="logo-img">
+            <span class="logo-text">HabitCanvas</span>
+        </div>
+
+        <div class="nav-center">
+            <a href="/dashboard" class="nav-btn"><i class="fa fa-list"></i> Tasks</a>
+            <a href="/timer" class="nav-btn"><i class="fa fa-stopwatch"></i> Timer</a>
+            <a href="/calendar" class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
+            <a href="/profile" class="nav-btn"><i class="fa fa-user"></i> Profile</a>
+            <a href="/settings" class="nav-btn active"><i class="fa fa-cog"></i> Settings</a>
+        </div>
+
+        <div class="right">
+            <a href="#" class="btn-logout" onclick="openLogoutModal(event)">Logout</a>
+        </div>
+    </header>
+
+    <!-- SETTINGS CONTENT -->
+    <div class="settings-container">
+        <div class="settings-header">
+            <h1>Settings</h1>
+            <p>Manage your account settings and preferences</p>
+        </div>
+
+        <!-- Account Information -->
+        <div class="settings-section">
+            <h2 class="section-title">
+                <i class="fa fa-user-circle"></i>
+                Account Information
+            </h2>
+            <div class="account-info-item">
+                <span class="account-info-label">Email Address</span>
+                <span class="account-info-value">{{ user.email }}</span>
+            </div>
+            <div class="account-info-item">
+                <span class="account-info-label">Member Since</span>
+                <span class="account-info-value">{{ user.date_joined|date:"F d, Y" }}</span>
+            </div>
+            <div class="account-info-item">
+                <span class="account-info-label">Account Status</span>
+                <span class="account-info-value" style="color: #22c55e;">Active</span>
+            </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="settings-section">
+            <h2 class="section-title">
+                <i class="fa fa-lock"></i>
+                Change Password
+            </h2>
+
+            <div id="passwordError" class="error-message"></div>
+            <div id="passwordSuccess" class="success-message"></div>
+
+            <form id="changePasswordForm" onsubmit="changePassword(event)">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="oldPassword" required placeholder="Enter current password">
+                </div>
+
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" required placeholder="Enter new password">
+                    <small style="color: #888; font-size: 13px; display: block; margin-top: 5px;">
+                        Must contain at least 1 uppercase letter and 1 special character
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPassword" required placeholder="Confirm new password">
+                </div>
+
+                <button type="submit" class="btn-change-password">
+                    <i class="fa fa-check"></i>
+                    Change Password
+                </button>
+            </form>
+        </div>
+
+        <!-- Privacy & Terms -->
+        <div class="settings-section">
+            <h2 class="section-title">
+                <i class="fa fa-shield-alt"></i>
+                Privacy & Legal
+            </h2>
+            <div class="policy-links">
+                <a href="/privacy" class="policy-link">
+                    <div class="policy-link-text">
+                        <i class="fa fa-file-alt"></i>
+                        <span class="policy-link-title">Privacy Policy</span>
+                    </div>
+                    <i class="fa fa-chevron-right policy-link-arrow"></i>
+                </a>
+                <a href="/terms" class="policy-link">
+                    <div class="policy-link-text">
+                        <i class="fa fa-file-contract"></i>
+                        <span class="policy-link-title">Terms & Conditions</span>
+                    </div>
+                    <i class="fa fa-chevron-right policy-link-arrow"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared Logout Modal -->
+    <div class="modal" id="sharedLogoutModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="logout-modal-header">
+                <h2 class="logout-modal-title">Goodbye 👋</h2>
+                <p class="logout-modal-subtitle">Are you sure you want to log out?</p>
+            </div>
+            <div class="logout-modal-body">
+                <div class="user-avatar">
+                    <i class="fa fa-user-circle"></i>
+                </div>
+                <p class="logout-user-label">Logged in as</p>
+                <p class="logout-user-email">{{ user.email }}</p>
+                <div class="logout-info-box">
+                    <p>You will be signed out of your account and redirected to the login page</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="flex-direction: column; gap: 12px;">
+                <button type="button" class="btn btn-danger logout-btn-confirm" onclick="confirmLogout()">
+                    Logout <i class="fa fa-sign-out-alt"></i>
+                </button>
+                <button type="button" class="btn btn-cancel logout-btn-stay" onclick="closeLogoutModal()">Stay logged
+                    in</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Shared Logout Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        #sharedLogoutModal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #sharedLogoutModal.active {
+            display: flex !important;
+        }
+
+        .logout-modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logout-modal-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            color: #1a1a1a;
+        }
+
+        .logout-modal-subtitle {
+            font-size: 17px;
+            color: #666;
+            margin: 0;
+        }
+
+        .logout-modal-body {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .user-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            color: #1976d2;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2);
+        }
+
+        .logout-user-label {
+            font-size: 14px;
+            color: #888;
+            margin: 0 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .logout-user-email {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1976d2;
+            margin: 0 0 25px 0;
+        }
+
+        .logout-info-box {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 1px solid #ffb74d;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0 30px 0;
+        }
+
+        .logout-info-box p {
+            margin: 0;
+            font-size: 15px;
+            color: #5d4037;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+        }
+
+        .logout-btn-confirm {
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(229, 57, 53, 0.4);
+        }
+
+        .logout-btn-stay {
+            width: 100%;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            background: white;
+            color: #424242;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn-stay:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+    </style>
+
+    <script>
+        function getCookie(name) {
+            let value = null;
+            document.cookie.split(";").forEach(c => {
+                c = c.trim();
+                if (c.startsWith(name + "="))
+                    value = decodeURIComponent(c.substring(name.length + 1));
+            });
+            return value;
+        }
+
+        function changePassword(e) {
+            e.preventDefault();
+
+            const data = {
+                old_password: document.getElementById('oldPassword').value,
+                new_password: document.getElementById('newPassword').value,
+                confirm_password: document.getElementById('confirmPassword').value
+            };
+
+            fetch('/settings/change_password/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(data)
+            })
+                .then(r => r.json())
+                .then(result => {
+                    if (result.success) {
+                        document.getElementById('passwordSuccess').textContent = result.message;
+                        document.getElementById('passwordSuccess').style.display = 'block';
+                        document.getElementById('passwordError').style.display = 'none';
+                        document.getElementById('changePasswordForm').reset();
+
+                        setTimeout(() => {
+                            document.getElementById('passwordSuccess').style.display = 'none';
+                        }, 3000);
+                    } else {
+                        document.getElementById('passwordError').textContent = result.error;
+                        document.getElementById('passwordError').style.display = 'block';
+                        document.getElementById('passwordSuccess').style.display = 'none';
+                    }
+                });
+        }
+
+        function openLogoutModal(event) {
+            event.preventDefault();
+            document.getElementById('sharedLogoutModal').classList.add('active');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('sharedLogoutModal').classList.remove('active');
+        }
+
+        function confirmLogout() {
+            window.location.href = '/logout';
+        }
+    </script>
+
+</body>
+
+</html>
