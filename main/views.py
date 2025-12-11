@@ -697,13 +697,40 @@ def reschedule_event(request, event_id):
 @login_required
 def toggle_complete(request, task_id):
     task = get_object_or_404(Task, id=task_id, user=request.user)
+
+    # Toggle task completion
     task.completed = not task.completed
     task.save()
 
+    # Get all subtasks for this task
+    subtasks = task.subtasks.all()
+
+    if task.completed:
+        # 🔥 MARK ALL SUBTASKS AS COMPLETED
+        subtasks.update(completed=True)
+    else:
+        # 🔄 MARK ALL SUBTASKS AS INCOMPLETE
+        subtasks.update(completed=False)
+
+    # Calculate updated progress
+    completed_count = subtasks.filter(completed=True).count()
+    total_count = subtasks.count()
+    percent = (completed_count / total_count * 100) if total_count > 0 else 0
+
+    # AJAX response for your JS
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        return JsonResponse({"success": True, "completed": task.completed})
+        return JsonResponse({
+            "success": True,
+            "completed": task.completed,
+            "progress": {
+                "completed": completed_count,
+                "total": total_count,
+                "percent": percent
+            }
+        })
 
     return redirect("dashboard")
+
 
 
 @login_required
