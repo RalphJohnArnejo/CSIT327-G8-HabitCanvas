@@ -32,7 +32,7 @@
     </div>
 
     <div class="right">
-        <a href="#" class="btn-logout">Logout</a>
+        <a href="#" class="btn-logout" id="openLogout">Logout</a>
     </div>
 </header>
 
@@ -105,17 +105,17 @@
             {% csrf_token %}
 
             <label>Task Title</label>
-            <input type="text" name="title" id="title" required>
+            <input type="text" name="title" required>
 
             <label>Category</label>
-            <select name="category" id="category" required>
+            <select name="category" required>
                 <option value="School">School</option>
                 <option value="Personal">Personal</option>
                 <option value="Work">Work</option>
             </select>
 
             <label>Difficulty</label>
-            <select name="difficulty" id="difficulty" required>
+            <select name="difficulty" required>
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
@@ -125,16 +125,11 @@
             <input type="text" name="due_date" id="due_date" class="flatpickr">
 
             <label>Priority</label>
-            <select name="priority" id="priority">
+            <select name="priority">
                 <option value="0">Low</option>
                 <option value="1">Medium</option>
                 <option value="2">High</option>
             </select>
-
-            <label class="calendar-checkbox">
-                <input type="checkbox" name="add_to_calendar" value="1">
-                <span>📅 Add to Calendar</span>
-            </label>
 
             <button class="btn-primary">Add Task</button>
         </form>
@@ -191,94 +186,45 @@
     </div>
 </div>
 
-<!-- JAVASCRIPT -->
 <script>
 
-/* COOKIE HELPER */
-function getCookie(name) {
-    let cookieValue = null;
-    document.cookie.split(";").forEach(cookie => {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + "=")) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        }
+/* ----------------------
+   COOKIE HELPER
+---------------------- */
+function getCookie(name){
+    let value = null;
+    document.cookie.split(";").forEach(c=>{
+        c = c.trim();
+        if (c.startsWith(name + "="))
+            value = decodeURIComponent(c.substring(name.length + 1));
     });
-    return cookieValue;
-}
-
-/* COUNT ACTIVE TASKS */
-function refreshActiveCount() {
-    document.getElementById("activeTaskCount").textContent =
-        document.querySelectorAll("#active-tasks .task-card").length;
-}
-
-/* SORT BY PRIORITY */
-function sortTasksByPriority() {
-    const list = document.getElementById("active-tasks");
-    [...list.children]
-        .sort((a, b) => Number(b.dataset.priority) - Number(a.dataset.priority))
-        .forEach(task => list.appendChild(task));
+    return value;
 }
 
 /* ----------------------
-   MODAL HANDLING
- ---------------------- */
-const addModal = document.getElementById("addModal");
-const editModal = document.getElementById("editModal");
-const logoutModal = document.getElementById("logoutModal");
+   COUNTERS + SORT
+---------------------- */
+function refreshActiveCount(){
+    const count = document.querySelectorAll("#active-tasks .task-card").length;
+    document.getElementById("activeTaskCount").textContent = count;
+}
 
-document.getElementById("openAddBtn").onclick = e => {
-    e.preventDefault();
-    addModal.style.display = "block";
-};
+function sortTasksByPriority(){
+    const container = document.getElementById("active-tasks");
+    if (!container) return;
 
-addModal.querySelector(".close").onclick = () => addModal.style.display = "none";
-editModal.querySelector(".close").onclick = () => editModal.style.display = "none";
-
-/* CLICK OUTSIDE TO CLOSE */
-window.onclick = e => {
-    if (e.target === addModal) addModal.style.display = "none";
-    if (e.target === editModal) editModal.style.display = "none";
-    if (e.target === logoutModal) logoutModal.style.display = "none";
-};
-
-/* ----------------------
-   EDIT TASK POPULATION
- ---------------------- */
-function openEditModal(btn) {
-    const id = btn.dataset.id;
-    document.getElementById("edit_title").value = btn.dataset.title;
-    document.getElementById("edit_category").value = btn.dataset.category;
-    document.getElementById("edit_difficulty").value = btn.dataset.difficulty;
-    document.getElementById("edit_priority").value = btn.dataset.priority;
-
-    editCalendar.setDate(btn.dataset.due);
-
-    document.getElementById("editTaskForm").action = `/tasks/edit/${id}/`;
-    editModal.style.display = "block";
+    [...container.children]
+        .sort((a,b)=> Number(b.dataset.priority) - Number(a.dataset.priority))
+        .forEach(x => container.appendChild(x));
 }
 
 /* ----------------------
-   LOGOUT LOGIC
- ---------------------- */
-document.querySelector(".btn-logout").onclick = e => {
-    e.preventDefault();
-    logoutModal.style.display = "flex";
-};
-
-document.getElementById("btnCancelLogout").onclick = () =>
-    logoutModal.style.display = "none";
-
-document.getElementById("btnConfirmLogout").onclick = () =>
-    window.location.href = "{% url 'logout' %}";
-
-
-/* ----------------------
-   FLATPICKR INIT
- ---------------------- */
+   FLATPICKR
+---------------------- */
 let addCalendar, editCalendar;
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", ()=>{
+
     addCalendar = flatpickr("#due_date", {
         minDate: "today",
         dateFormat: "Y-m-d"
@@ -288,253 +234,308 @@ document.addEventListener("DOMContentLoaded", function () {
         minDate: "today",
         dateFormat: "Y-m-d"
     });
+
+    attachTaskEvents();
+    refreshActiveCount();
+    sortTasksByPriority();
 });
 
 /* ----------------------
-   SUBTASK SYSTEM
- ---------------------- */
-function loadSubtasks(taskId) {
-    fetch(`/tasks/${taskId}/subtasks/`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                updateSubtaskUI(taskId, data.subtasks, data.progress);
-            }
-        });
+   EDIT MODAL
+---------------------- */
+function openEditModal(btn){
+    const id = btn.dataset.id;
+
+    document.getElementById("edit_title").value       = btn.dataset.title;
+    document.getElementById("edit_category").value    = btn.dataset.category;
+    document.getElementById("edit_difficulty").value  = btn.dataset.difficulty;
+    document.getElementById("edit_priority").value    = btn.dataset.priority;
+
+    if (editCalendar)
+        editCalendar.setDate(btn.dataset.due || "");
+
+    document.getElementById("editTaskForm").action = `/tasks/edit/${id}/`;
+    document.getElementById("editModal").style.display = "block";
 }
 
-function addSubtask(taskId, title, inputEl) {
+/* ----------------------
+   SUBTASK FUNCTIONS
+---------------------- */
+function addSubtask(taskId, title, inputEl){
     const fd = new FormData();
     fd.append("title", title);
 
     fetch(`/tasks/${taskId}/subtasks/add/`, {
         method: "POST",
         body: fd,
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
+        headers:{
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest"
+        }
     })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const list = document.querySelector(
-                    `.subtask-list[data-task-id="${taskId}"]`
-                );
+    .then(r => r.json())
+    .then(data =>{
+        if (!data.success) return;
 
-                const li = document.createElement("li");
-                li.className = "subtask-item";
-                li.dataset.subtaskId = data.subtask_id;
+        const list = document.querySelector(`.subtask-list[data-task-id="${taskId}"]`);
+        if (!list) return;
 
-                li.innerHTML = `
-                    <label class="subtask-checkbox">
-                        <input type="checkbox" data-subtask-id="${data.subtask_id}">
-                        <span>${data.title}</span>
-                    </label>
-                    <button class="subtask-delete-btn" data-subtask-id="${data.subtask_id}">
-                        <i class="fa fa-times"></i>
-                    </button>`;
-
-                list.appendChild(li);
-                inputEl.value = "";
-                updateSubtaskProgress(taskId, data.progress);
-                attachTaskEvents();
-            }
-        });
-}
-
-function toggleSubtask(subtaskId, checkbox) {
-    fetch(`/subtasks/${subtaskId}/toggle/`, {
-        method: "POST",
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const li = checkbox.closest(".subtask-item");
-                const title = li.querySelector("span");
-
-                li.classList.toggle("completed", data.completed);
-                title.classList.toggle("crossed", data.completed);
-
-                const taskId = checkbox.closest(".task-card").dataset.id;
-                updateSubtaskProgress(taskId, data.progress);
-            }
-        });
-}
-
-function deleteSubtask(subtaskId, btn) {
-    fetch(`/subtasks/${subtaskId}/delete/`, {
-        method: "POST",
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                const li = btn.closest(".subtask-item");
-                const taskId = btn.closest(".task-card").dataset.id;
-
-                li.remove();
-                updateSubtaskProgress(taskId, data.progress);
-            }
-        });
-}
-
-function updateSubtaskUI(taskId, subtasks, progress) {
-    const list = document.querySelector(`.subtask-list[data-task-id="${taskId}"]`);
-    list.innerHTML = "";
-
-    subtasks.forEach(s => {
         const li = document.createElement("li");
-        li.className = `subtask-item ${s.completed ? "completed" : ""}`;
-        li.dataset.subtaskId = s.id;
+        li.className = "subtask-item";
+        li.dataset.subtaskId = data.subtask_id;
 
         li.innerHTML = `
             <label class="subtask-checkbox">
-                <input type="checkbox" data-subtask-id="${s.id}" ${s.completed ? "checked" : ""}>
-                <span class="${s.completed ? "crossed" : ""}">${s.title}</span>
+                <input type="checkbox" data-subtask-id="${data.subtask_id}">
+                <span class="subtask-title">${data.title}</span>
             </label>
-            <button class="subtask-delete-btn" data-subtask-id="${s.id}">
+            <button class="subtask-delete-btn" data-subtask-id="${data.subtask_id}">
                 <i class="fa fa-times"></i>
-            </button>`;
+            </button>
+        `;
 
         list.appendChild(li);
-    });
 
-    updateSubtaskProgress(taskId, progress);
-    attachTaskEvents();
+        li.querySelector(".subtask-delete-btn").onclick = () =>
+            deleteSubtask(data.subtask_id, li.querySelector(".subtask-delete-btn"));
+
+        inputEl.value = "";
+        updateSubtaskProgress(taskId, data.progress);
+
+        attachTaskEvents(); // rebind new events
+    });
 }
 
-function updateSubtaskProgress(taskId, progress) {
-    const fill = document.querySelector(
-        `.subtask-progress-fill[data-task-id="${taskId}"]`
-    );
-    const txt = document.querySelector(
-        `.subtask-progress-text[data-task-id="${taskId}"]`
-    );
-    const badge = document.querySelector(
-        `.subtask-count[data-task-id="${taskId}"]`
-    );
+function toggleSubtask(subtaskId, checkbox){
+    fetch(`/subtasks/${subtaskId}/toggle/`, {
+        method: "POST",
+        headers:{
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(r=>r.json())
+    .then(data=>{
+        if (!data.success) return;
 
-    if (fill) fill.style.width = `${progress.percent}%`;
-    if (txt) txt.textContent = `${progress.completed}/${progress.total} completed`;
-    if (badge)
-        badge.textContent =
-            progress.total > 0 ? `${progress.completed}/${progress.total}` : "";
+        const li = checkbox.closest(".subtask-item");
+        li.classList.toggle("completed", data.completed);
+        li.querySelector(".subtask-title").classList.toggle("crossed", data.completed);
+
+        updateSubtaskProgress(
+            checkbox.closest(".task-card").dataset.id,
+            data.progress
+        );
+    });
+}
+
+function deleteSubtask(subtaskId, btn){
+    fetch(`/subtasks/${subtaskId}/delete/`, {
+        method:"POST",
+        headers:{ 
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) return;
+
+        const li = btn.closest(".subtask-item");
+        const taskId = btn.closest(".task-card").dataset.id;
+
+        li.remove();
+        updateSubtaskProgress(taskId, data.progress);
+    });
+}
+
+
+function updateSubtaskProgress(taskId, progress){
+    const bar   = document.querySelector(`.subtask-progress-fill[data-task-id="${taskId}"]`);
+    const text  = document.querySelector(`.subtask-progress-text[data-task-id="${taskId}"]`);
+    const badge = document.querySelector(`.subtask-count[data-task-id="${taskId}"]`);
+
+    if (bar) bar.style.width = `${progress.percent}%`;
+    if (text) text.textContent = `${progress.completed}/${progress.total} completed`;
+    if (badge) badge.textContent = `${progress.completed}/${progress.total}`;
 }
 
 /* ----------------------
-   ATTACH EVENT HANDLERS
- ---------------------- */
-function attachTaskEvents() {
-    document.querySelectorAll(".edit-btn").forEach(btn => {
-        btn.onclick = () => openEditModal(btn);
+   MAIN EVENT BINDER
+---------------------- */
+function attachTaskEvents(){
+
+    /* EDIT */
+    document.querySelectorAll(".edit-btn").forEach(btn=>{
+        btn.onclick = e=>{
+            e.preventDefault();
+            openEditModal(btn);
+        };
     });
 
-    document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn => {
+    /* COMPLETE + DELETE */
+    document.querySelectorAll(".complete-btn, .delete-btn").forEach(btn=>{
+        btn.onclick = e=>{
+            e.preventDefault();
+
+            const id = btn.dataset.id;
+            const complete = btn.classList.contains("complete-btn");
+
+            fetch(complete ? `/tasks/toggle_complete/${id}/` : `/tasks/delete/${id}/`, {
+                method:"POST",
+                headers:{
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With":"XMLHttpRequest"
+                }
+            })
+            .then(r=>r.json())
+            .then(data=>{
+                if (!data.success) return;
+
+                const card = document.querySelector(`.task-card[data-id="${id}"]`);
+
+                if (complete){
+                    if (data.completed){
+                        document.getElementById("completed-tasks").appendChild(card);
+                        card.classList.add("completed");
+                        card.querySelector(".task-title").classList.add("crossed");
+
+                        btn.querySelector("i").classList.replace("fa-check", "fa-undo");
+                    } else {
+                        document.getElementById("active-tasks").appendChild(card);
+                        card.classList.remove("completed");
+                        card.querySelector(".task-title").classList.remove("crossed");
+
+                        btn.querySelector("i").classList.replace("fa-undo", "fa-check");
+                        sortTasksByPriority();
+                    }
+                    refreshActiveCount();
+                } else {
+                    card.remove();
+                    refreshActiveCount();
+                }
+            });
+        };
+    });
+
+    /* FAVORITE */
+    document.querySelectorAll(".favorite-btn").forEach(btn=>{
+        btn.onclick = e=>{
+            e.preventDefault();
+
+            fetch(`/tasks/toggle_favorite/${btn.dataset.id}/`, {
+                method:"POST",
+                headers:{
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With":"XMLHttpRequest"
+                }
+            })
+            .then(r=>r.json())
+            .then(data=>{
+                if (data.success){
+                    btn.querySelector("i").classList.toggle("starred", data.favorite);
+                }
+            });
+        };
+    });
+
+    /* SUBTASK TOGGLE */
+    document.querySelectorAll(".subtask-toggle-btn").forEach(btn=>{
+        btn.onclick = e=>{
+            e.preventDefault();
+
+            const section = btn.closest(".task-card").querySelector(".subtasks-section");
+            section.style.display = section.style.display === "none" ? "block" : "none";
+        };
+    });
+
+    /* ADD SUBTASK */
+    document.querySelectorAll(".add-subtask-btn").forEach(btn=>{
+        btn.onclick = ()=>{
+            const input = btn.parentElement.querySelector(".subtask-input");
+            const text = input.value.trim();
+            if (text) addSubtask(btn.dataset.taskId, text, input);
+        };
+    });
+
+    /* ENTER → ADD SUBTASK */
+    document.querySelectorAll(".subtask-input").forEach(input=>{
+        input.onkeypress = e=>{
+            if (e.key === "Enter"){
+                e.preventDefault();
+                const text = input.value.trim();
+                if (text) addSubtask(input.dataset.taskId, text, input);
+            }
+        };
+    });
+
+    /* CHECK SUBTASK */
+    document.querySelectorAll(".subtask-checkbox input").forEach(box=>{
+        box.onchange = ()=> toggleSubtask(box.dataset.subtaskId, box);
+    });
+
+    /* DELETE SUBTASK */
+    document.querySelectorAll(".subtask-delete-btn").forEach(btn => {
         btn.onclick = e => {
             e.preventDefault();
-            const id = btn.dataset.id;
-            const isComplete = btn.classList.contains("complete-btn");
-
-            fetch(
-                isComplete
-                    ? `/tasks/toggle_complete/${id}/`
-                    : `/tasks/delete/${id}/`,
-                {
-                    method: "POST",
-                    headers: { "X-CSRFToken": getCookie("csrftoken") }
-                }
-            )
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        if (isComplete) {
-                            const card = btn.closest(".task-card");
-
-                            if (data.completed) {
-                                document.getElementById("completed-tasks").appendChild(card);
-                                card.classList.add("completed");
-                            } else {
-                                document.getElementById("active-tasks").appendChild(card);
-                                card.classList.remove("completed");
-                                sortTasksByPriority();
-                            }
-                            refreshActiveCount();
-                        } else {
-                            btn.closest(".task-card").remove();
-                            refreshActiveCount();
-                        }
-                    }
-                });
+            deleteSubtask(btn.dataset.subtaskId, btn);
         };
     });
 
-    document.querySelectorAll(".favorite-btn").forEach(btn => {
-        btn.onclick = () => {
-            fetch(`/tasks/toggle_favorite/${btn.dataset.id}/`, {
-                method: "POST",
-                headers: { "X-CSRFToken": getCookie("csrftoken") }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        btn.querySelector("i").classList.toggle("starred", data.favorite);
-                    }
-                });
-        };
-    });
-
-    document.querySelectorAll(".subtask-toggle-btn").forEach(btn => {
-        btn.onclick = () => {
-            const taskId = btn.dataset.id;
-            const section = btn.closest(".task-card").querySelector(".subtasks-section");
-
-            if (section.style.display === "none") {
-                section.style.display = "block";
-                loadSubtasks(taskId);
-            } else {
-                section.style.display = "none";
-            }
-        };
-    });
-
-    document.querySelectorAll(".add-subtask-btn").forEach(btn => {
-        btn.onclick = () => {
-            const taskId = btn.dataset.taskId;
-            const input = btn.parentElement.querySelector(".subtask-input");
-            const value = input.value.trim();
-
-            if (value) {
-                addSubtask(taskId, value, input);
-            }
-        };
-    });
-
-    document.querySelectorAll(".subtask-input").forEach(input => {
-        input.onkeypress = e => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                const taskId = input.dataset.taskId;
-                if (input.value.trim()) {
-                    addSubtask(taskId, input.value.trim(), input);
-                }
-            }
-        };
-    });
-
-    document.querySelectorAll(".subtask-checkbox input").forEach(box => {
-        box.onchange = () => toggleSubtask(box.dataset.subtaskId, box);
-    });
-
-    document.querySelectorAll(".subtask-delete-btn").forEach(btn => {
-        btn.onclick = () => deleteSubtask(btn.dataset.subtaskId, btn);
-    });
 }
 
-attachTaskEvents();
-refreshActiveCount();
-sortTasksByPriority();
+/* ----------------------
+   MODALS
+---------------------- */
+document.getElementById("openAddBtn").onclick = e=>{
+    e.preventDefault();
+    document.getElementById("addModal").style.display = "block";
+};
+
+document.querySelectorAll(".modal .close").forEach(btn=>{
+    btn.onclick = ()=> btn.closest(".modal").style.display = "none";
+});
+
+document.getElementById("openLogout").onclick = e=>{
+    e.preventDefault();
+    document.getElementById("logoutModal").style.display = "block";
+};
+
+document.getElementById("btnCancelLogout").onclick = ()=>{
+    document.getElementById("logoutModal").style.display = "none";
+};
+
+window.onclick = e=>{
+    if (e.target.classList.contains("modal"))
+        e.target.style.display = "none";
+};
+
+/* ----------------------
+   EDIT FORM (AJAX)
+---------------------- */
+document.getElementById("editTaskForm").onsubmit = function(e){
+    e.preventDefault();
+
+    fetch(this.action, {
+        method:"POST",
+        headers:{
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With":"XMLHttpRequest"
+        },
+        body: new FormData(this)
+    })
+    .then(r=>r.json())
+    .then(data=>{
+        if (data.success){
+            location.reload();
+        } else {
+            alert("Error updating task.");
+        }
+    });
+};
 
 </script>
+
+
 </body>
 </html>
