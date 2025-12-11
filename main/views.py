@@ -114,20 +114,42 @@ def logout_view(request):
 # DASHBOARD
 # ============================================================
 @login_required
+@login_required
 def dashboard_view(request):
     tasks = Task.objects.filter(user=request.user)
 
+    # --- FILTER INPUTS ---
     category = request.GET.get("category")
     difficulty = request.GET.get("difficulty")
-    sort = request.GET.get("sort", "default")
+    sort = request.GET.get("sort")
 
+    # --- APPLY CATEGORY FILTER ---
     if category:
         tasks = tasks.filter(category=category)
+
+    # --- APPLY DIFFICULTY FILTER ---
     if difficulty:
         tasks = tasks.filter(difficulty=difficulty)
 
-    tasks = tasks.order_by("-priority", "-id") if sort == "priority" else tasks.order_by("-id")
+    # --- SORTING ---
+    # Normalize invalid sort values
+    if sort not in ["default", "priority", "due", "difficulty"]:
+        sort = "default"
 
+    if sort == "priority":
+        tasks = tasks.order_by("-priority", "-id")
+
+    elif sort == "due":
+        tasks = tasks.order_by("due_date", "-id")
+
+    elif sort == "difficulty":
+        tasks = tasks.order_by("-difficulty", "-id")
+
+    else:
+        # DEFAULT VIEW = newest tasks first
+        tasks = tasks.order_by("-id")
+
+    # --- CONTEXT ---
     active_count = tasks.filter(completed=False).count()
     form = TaskForm()
 
@@ -136,6 +158,7 @@ def dashboard_view(request):
         "form": form,
         "active_count": active_count,
     })
+
 
 
 # ============================================================
