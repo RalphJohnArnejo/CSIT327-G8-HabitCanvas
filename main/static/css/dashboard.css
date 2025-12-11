@@ -463,6 +463,25 @@ body {
     background: linear-gradient(135deg, #F0FFF0 0%, #E8FFE8 100%);
 }
 
+.task-card.completed .add-subtask-form {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* Subtasks disabled when task is completed */
+.task-card.completed .subtask-checkbox input {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.task-card.completed .subtask-delete-btn {
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+
+
+
 /* ========== FOOTER ========== */
 footer {
     margin-top: auto;
