@@ -5,23 +5,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>HabitCanvas</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body>
 
-<header>
-    <div class="logo">
-        <img src="{% static 'images/logo.png' %}" alt="">
-        <span>Task Manager</span>
+<header class="top-nav">
+    <div class="left">
+        <img src="{% static 'habitcanvass.jpg' %}" class="logo-img" alt="HabitCanvas logo">
+        <span class="logo-text">HabitCanvas</span>
     </div>
 
-    <nav>
-        <a href="{% url 'dashboard' %}" class="btn-outline">Dashboard</a>
-        <a href="{% url 'tasks' %}" class="btn-primary">Tasks</a>
-        <a href="{% url 'logout' %}" class="btn-outline">Logout</a>
-    </nav>
+    <div class="nav-center">
+        <a href="{% url 'dashboard' %}" class="nav-btn {% if request.path == '/dashboard/' %}active{% endif %}"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="{% url 'tasks' %}" class="nav-btn {% if request.path == '/tasks/' %}active{% endif %}"><i class="fa fa-list"></i> Tasks</a>
+        <a href="{% url 'timer' %}" class="nav-btn {% if request.path == '/timer/' %}active{% endif %}"><i class="fa fa-stopwatch"></i> Timer</a>
+        <a href="/calendar/" class="nav-btn {% if request.path == '/calendar/' %}active{% endif %}"><i class="fa fa-calendar"></i> Calendar</a>
+    </div>
+
+    <div class="right">
+        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+    </div>
 </header>
 
 <main>
@@ -29,7 +35,7 @@
 </main>
 
 <footer>
-    © 2025 Task Manager. All rights reserved.
+    © 2025 HabitCanvas. All rights reserved.
 </footer>
 
 </body>

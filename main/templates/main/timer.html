@@ -1,285 +1,56 @@
+{% extends "main/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>HabitCanvas | Timer</title>
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-    /* ===== reset-ish / page basics ===== */
-    :root{
-        --blue:#1f6feb;
-        --muted:#f3f4f6;
-        --card-shadow: 0 4px 10px rgba(0,0,0,0.07);
-    }
-    *{box-sizing:border-box}
-    body{
-        margin:0;
-        font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-        background:#f5f6fa;
-        color:#222;
-    }
+{% block content %}
 
-    /* ===== top nav (same look as dashboard) ===== */
-    .top-nav{
-        background:#fff;
-        padding:15px 40px;
-        border-bottom:1px solid #ddd;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        position:sticky;
-        top:0;
-        z-index:50;
-    }
-    .top-nav .left, .top-nav .right{ display:flex; align-items:center; gap:10px; }
-    .logo-img{ height:35px; width:35px; border-radius:6px; object-fit:cover; }
-    .logo-text{ font-size:1.3rem; font-weight:600; margin-left:6px; }
-    .nav-center{
-        position:absolute;
-        left:50%;
-        transform:translateX(-50%);
-        display:flex;
-        gap:15px;
-        align-items:center;
-    }
-    .nav-btn{
-        padding:10px 18px;
-        border-radius:10px;
-        background:none;
-        border:none;
-        font-size:0.95rem;
-        color: #000;
-        text-decoration:none;
-        display:flex;
-        gap:8px;
-        align-items:center;
-        cursor:pointer;
-    }
-    .btn-logout {
-    background: #e0e7ff;
-    padding: 8px 16px;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #1e57ff;
-    transition: 0.2s;
-    }
-
-    /* ===== main box ===== */
-    .main-box{
-        width:780px;
-        max-width:calc(100% - 48px);
-        margin:40px auto;
-        padding:30px 40px;
-        background:#fff;
-        border-radius:15px;
-        box-shadow: var(--card-shadow);
-    }
-
-    .title-area{ display:flex; justify-content:space-between; align-items:center; gap:20px; }
-    h2{ margin:0; font-size:28px; font-weight:700; }
-    .subtitle{ color:#666; margin-top:6px; font-size:0.95rem; }
-
-    .top-buttons{ display:flex; gap:12px; }
-    .top-btn{
-        border:1px solid #cfcfcf;
-        padding:8px 14px;
-        border-radius:10px;
-        background:#fff;
-        cursor:pointer;
-        font-weight:600;
-        display:flex;
-        gap:8px;
-        align-items:center;
-    }
-
-    /* modes */
-    .mode-buttons{ margin-top:25px; display:flex; justify-content:center; gap:15px; }
-    .mode-btn{
-        padding:12px 28px;
-        border-radius:10px;
-        border:1px solid #cfd4dc;
-        background:#fff;
-        font-weight:600;
-        cursor:pointer;
-        display:flex;
-        align-items:center;
-        gap:8px;
-    }
-    .mode-btn.active-mode{ background:var(--blue); color:#fff; border-color:var(--blue); }
-
-    /* timer circle */
-    .timer-wrapper{ display:flex; justify-content:center; margin:30px 0; }
-    .timer-circle{
-        width:260px; height:260px;
-        border-radius:50%;
-        border:6px solid var(--blue);
-        display:flex; align-items:center; justify-content:center;
-        font-size:52px; font-weight:700; color:var(--blue);
-        background:#f9fbff;
-        position:relative;
-        transition:transform .25s ease;
-        box-shadow: 0 6px 20px rgba(31,111,235,0.05) inset;
-    }
-    /* running animation */
-    .timer-circle.running{
-        animation: pulse 1.8s infinite;
-        transform:scale(1.01);
-    }
-    @keyframes pulse {
-        0%{ box-shadow: 0 0 0 0 rgba(31,111,235,0.12) inset; }
-        50%{ box-shadow: 0 0 0 18px rgba(31,111,235,0.03) inset; }
-        100%{ box-shadow: 0 0 0 0 rgba(31,111,235,0.00) inset; }
-    }
-
-    /* small inner label (to match screenshot) */
-    .timer-inner {
-        background: rgba(0,0,0,0.04);
-        padding: 10px 22px;
-        border-radius:10px;
-        color:#222;
-        font-weight:700;
-        font-size:36px;
-    }
-
-    /* controls */
-    .controls{ display:flex; justify-content:center; gap:15px; margin-bottom:6px; }
-    .ctrl-btn{ padding:12px 24px; border-radius:10px; font-weight:600; border:none; cursor:pointer; }
-    .start{ background:var(--blue); color:#fff }
-    .pause{ background:#d2d2d2 }
-    .stop{ background:#ff4b4b; color:#fff }
-    .reset{ background:#efefef }
-
-    /* ===== SETTINGS MODAL (styled like your preferred modal) ===== */
-    .settings-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); z-index:2000; }
-    .settings-box{
-        width:560px; max-width:calc(100% - 48px);
-        background:#fff; border-radius:12px; padding:22px 26px;
-        box-shadow:0 10px 30px rgba(0,0,0,0.12);
-        animation:pop .12s ease;
-    }
-    @keyframes pop{ from{transform:translateY(-6px);opacity:0} to{transform:none;opacity:1} }
-
-    .settings-header{ display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:8px; }
-    .settings-header h3{ margin:0; font-size:18px; font-weight:700; }
-    .settings-close{ position:absolute; right:0; top:-6px; background:none; border:none; font-size:22px; cursor:pointer; color:#666; }
-    .settings-body{ margin-top:12px; }
-
-    .setting-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
-    .setting-row .label{ min-width:170px; font-weight:600; color:#333; }
-    .slider-wrap{ flex:1; display:flex; align-items:center; gap:12px; }
-    .slider-wrap input[type="range"]{ -webkit-appearance:none; width:100%; height:8px; background:#e9eef9; border-radius:8px; outline:none; }
-    .slider-wrap input[type="range"]::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--blue); box-shadow:0 2px 6px rgba(31,111,235,0.28); border:3px solid rgba(255,255,255,0.6); cursor:pointer; }
-    .slider-value{ min-width:64px; text-align:right; font-weight:700; color:var(--blue); }
-
-    .option-row{ display:flex; gap:12px; align-items:center; margin-bottom:12px; }
-    .option-row label{ display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; }
-    .toggle{ width:42px; height:26px; background:#e9eef9; border-radius:14px; position:relative; transition:.15s; }
-    .toggle .dot{ position:absolute; top:3px; left:3px; width:20px; height:20px; background:#fff; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.08); transition:.15s; }
-    .toggle.on{ background:var(--blue); }
-    .toggle.on .dot{ left:calc(100% - 23px); }
-
-    .reset-default{ width:100%; padding:10px 12px; border-radius:10px; background:#f6f8ff; border:1px solid #e6eeff; color:#333; font-weight:700; cursor:pointer; margin-top:6px; margin-bottom:14px; }
-
-    .settings-footer{ display:flex; justify-content:flex-end; gap:10px; }
-    .btn-cancel{ padding:8px 14px; border-radius:8px; background:#f3f4f6; border:none; cursor:pointer; font-weight:600; }
-    .btn-save{ padding:8px 14px; border-radius:8px; background:var(--blue); color:#fff; border:none; cursor:pointer; font-weight:600; }
-
-    /* ===== STATS MODAL ===== */
-    .stats-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); z-index:2000; }
-    .stats-box{
-        width:560px; max-width:calc(100% - 48px);
-        background:#fff; border-radius:12px; padding:22px 26px;
-        box-shadow:0 10px 30px rgba(0,0,0,0.12);
-    }
-    .stats-header{ display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:14px; }
-    .stats-header h3{ margin:0; font-size:18px; font-weight:700; }
-    .stats-close{ position:absolute; right:0; top:-6px; background:none; border:none; font-size:22px; cursor:pointer; color:#666; }
-
-    .stats-cards{ display:flex; gap:14px; flex-direction:column; }
-    .stat-card{
-        border-radius:10px; padding:18px; min-height:88px;
-        display:flex; flex-direction:column; justify-content:center;
-    }
-    .stat-card.blue{ background:linear-gradient(180deg, #eaf3ff, #f6fbff); border:1px solid #e0efff; color:#055; }
-    .stat-card.green{ background:linear-gradient(180deg, #e9fbf0, #f6fff7); border:1px solid #dfeee0; color:#055; }
-    .stat-small{ font-size:13px; color:#2a6; opacity:.85; margin-bottom:6px; font-weight:700}
-    .stat-big{ font-size:22px; font-weight:800; margin-bottom:4px; color:#123; }
-    .stat-extra{ font-size:13px; color:#556; }
-
-    /* responsive */
-    @media(max-width:720px){
-        .main-box{ padding:22px; margin:20px; }
-        .nav-center{ position:static; transform:none; }
-    }
-
-    
-</style>
-</head>
-<body>
-
-<!-- TOP NAV -->
-<header class="top-nav">
-    <div class="left">
-        <img src="{% static 'habitcanvass.jpg' %}" class="logo-img" alt="logo">
-        <span class="logo-text">HabitCanvas</span>
-    </div>
-
-    <div class="nav-center">
-        <a href="/dashboard" class="nav-btn"><i class="fa fa-list"></i> Tasks</a>
-        <a href="/timer" class="nav-btn active"><i class="fa fa-stopwatch"></i> Timer</a>
-        <a href="#" class="nav-btn"><i class="fa fa-calendar"></i> Calendar</a>
-    </div>
-
-    <div class="right">
-        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
-    </div>
-</header>
-
-<!-- MAIN BOX -->
-<div class="main-box" role="main" aria-labelledby="timerTitle">
-    <div class="title-area">
-        <div>
-            <h2 id="timerTitle">Focus Timer</h2>
-            <p class="subtitle">Use the Pomodoro technique to stay focused</p>
+<section class="dashboard-section" aria-labelledby="timerTitle">
+    <div class="page-container">
+        <div class="header-row">
+            <div>
+                <h2 id="timerTitle">Focus Timer</h2>
+                <p class="subtext">Use the Pomodoro technique to stay focused</p>
+            </div>
         </div>
 
-        <div class="top-buttons">
-            <button id="openStats" class="top-btn"><i class="fa fa-chart-line"></i> Stats</button>
-            <button id="openSettings" class="top-btn"><i class="fa fa-gear"></i> Settings</button>
+        <div class="task-card timer-card" aria-label="Focus Timer">
+            <div class="title-area">
+                <div>
+                    <p class="subtitle">Customize your focus and break sessions</p>
+                </div>
+
+                <div class="top-buttons">
+                    <button id="openStats" class="top-btn"><i class="fa fa-chart-line"></i> Stats</button>
+                    <button id="openSettings" class="top-btn"><i class="fa fa-gear"></i> Settings</button>
+                </div>
+            </div>
+
+            <div class="mode-buttons" role="tablist" aria-label="timer modes">
+                <button id="focusMode" class="mode-btn active-mode" role="tab" aria-selected="true"><i class="fa fa-leaf"></i> Focus</button>
+                <button id="shortMode" class="mode-btn" role="tab" aria-selected="false"><i class="fa fa-mug-hot"></i> Short Break</button>
+                <button id="longMode" class="mode-btn" role="tab" aria-selected="false"><i class="fa fa-bed"></i> Long Break</button>
+            </div>
+
+            <div class="timer-wrapper" aria-hidden="false">
+                <div class="timer-circle" id="timerCircle" aria-live="polite">
+                    <div class="timer-inner" id="timer">25:00</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="startBtn" class="ctrl-btn start"><i class="fa fa-play"></i> Start</button>
+                <button id="pauseBtn" class="ctrl-btn pause"><i class="fa fa-pause"></i> Pause</button>
+                <button id="stopBtn" class="ctrl-btn stop"><i class="fa fa-stop"></i> Stop</button>
+                <button id="resetBtn" class="ctrl-btn reset"><i class="fa fa-rotate-left"></i> Reset</button>
+            </div>
         </div>
     </div>
-
-    <div class="mode-buttons" role="tablist" aria-label="timer modes">
-        <button id="focusMode" class="mode-btn active-mode" role="tab" aria-selected="true"><i class="fa fa-leaf"></i> Focus</button>
-        <button id="shortMode" class="mode-btn" role="tab" aria-selected="false"><i class="fa fa-mug-hot"></i> Short Break</button>
-        <button id="longMode" class="mode-btn" role="tab" aria-selected="false"><i class="fa fa-bed"></i> Long Break</button>
-    </div>
-
-    <div class="timer-wrapper" aria-hidden="false">
-        <div class="timer-circle" id="timerCircle" aria-live="polite">
-            <div class="timer-inner" id="timer">25:00</div>
-        </div>
-    </div>
-
-    <div class="controls">
-        <button id="startBtn" class="ctrl-btn start"><i class="fa fa-play"></i> Start</button>
-        <button id="pauseBtn" class="ctrl-btn pause"><i class="fa fa-pause"></i> Pause</button>
-        <button id="stopBtn" class="ctrl-btn stop"><i class="fa fa-stop"></i> Stop</button>
-        <button id="resetBtn" class="ctrl-btn reset"><i class="fa fa-rotate-left"></i> Reset</button>
-    </div>
-</div>
+</section>
 
 <!-- SETTINGS MODAL -->
-<div id="settingsModal" class="settings-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="settings-box" role="document">
-        <div class="settings-header">
-            <h3>Timer Settings</h3>
-            <button id="closeSettings" class="settings-close" title="Close">×</button>
-        </div>
+<div id="settingsModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content" role="document">
+        <span id="closeSettings" class="close" title="Close">&times;</span>
+        <h2>Timer Settings</h2>
 
         <div class="settings-body">
             <div class="setting-row">
@@ -306,15 +77,15 @@
                 </div>
             </div>
 
-            <div style="margin:8px 0 10px 0"></div>
+            <div class="settings-divider"></div>
 
             <div class="option-row">
                 <label>
                     <div class="toggle" id="soundToggle"><div class="dot"></div></div>
-                    <span>Ticking & End Sound</span>
+                    <span>Ticking &amp; End Sound</span>
                 </label>
 
-                <label style="margin-left:auto">
+                <label class="settings-option-right">
                     <div class="toggle" id="notifToggle"><div class="dot"></div></div>
                     <span>Desktop Notifications</span>
                 </label>
@@ -331,12 +102,10 @@
 </div>
 
 <!-- STATS MODAL -->
-<div id="statsModal" class="stats-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="stats-box" role="document">
-        <div class="stats-header">
-            <h3>Stats</h3>
-            <button id="closeStats" class="stats-close" title="Close">×</button>
-        </div>
+<div id="statsModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content" role="document">
+        <span id="closeStats" class="close" title="Close">&times;</span>
+        <h2>Stats</h2>
 
         <div class="stats-cards">
             <div class="stat-card blue">
@@ -351,22 +120,20 @@
                 <div class="stat-extra" id="weekSessions">0 sessions completed</div>
             </div>
 
-            <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+            <div class="stats-reset-row">
                 <button id="clearStats" class="top-btn" title="Clear stats">Reset Stats</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="modeConfirmModal" class="settings-modal" aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="settings-box" role="document">
-        <div class="settings-header">
-            <h3>Switch Timer Mode?</h3>
-            <button id="modeConfirmClose" class="settings-close" title="Close">×</button>
-        </div>
+<div id="modeConfirmModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content" role="document">
+        <span id="modeConfirmClose" class="close" title="Close">&times;</span>
+        <h2>Switch Timer Mode?</h2>
 
         <div class="settings-body">
-            <p id="modeConfirmText" style="margin-bottom:18px;">
+            <p id="modeConfirmText" class="mode-confirm-text">
                 You have a timer in progress. Switching modes will stop it and reset the timer.
             </p>
 
@@ -1233,10 +1000,5 @@ modeConfirmModal.addEventListener('click', (e) => {
     }
 });
 
-
-
-
-
 </script>
-</body>
-</html>
+{% endblock %}
